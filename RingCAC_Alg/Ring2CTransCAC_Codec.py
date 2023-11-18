@@ -1,0 +1,271 @@
+import copy
+
+
+class Codec_Ring2CTransCAC:
+    def __init__(self, len_cw: int):
+        assert isinstance(len_cw, int) and len_cw > 2
+        self._param_cwLength = len_cw
+        self._param_nsTuple = copy.deepcopy(self.initialize_ns(n_element=len_cw))
+        self._param_maxInputLimitation = self.get_max_input_value_limitation(n_bit=len_cw)
+
+    def getParam_cwLength(self) -> int:
+        '''
+        Get the length of codeword
+        :return:
+        '''
+        return self._param_cwLength
+
+    def getParam_maxInputLimitation(self) -> int:
+        '''
+        Get the max input value
+        :return:
+        '''
+        return self._param_maxInputLimitation
+
+    def initialize_ns(self, n_element: int) -> tuple[int, ...]:
+        '''
+        Get the numeral system seq.
+        The value in seq idx=i is the number of  the 2D-2c-trans-cac codeword with the bit width of (i+1).
+        :param n_element:
+        :return:
+        '''
+        assert isinstance(n_element, int) and n_element > 2
+        ns_list = [2, 3, 5]
+        for nbit_i in range(4, n_element):
+            ns_list.append(self.get_n_cw_normalTrans2C(n_bit=nbit_i))
+        ns_tuple = tuple(ns_list)
+        return ns_tuple
+
+    def get_max_input_value_limitation(self, n_bit: int) -> int:
+        '''
+        Get the max value that can be represented by the codeword with the length of n_bit
+        :param n_bit:
+        :return:
+        '''
+        assert isinstance(n_bit, int) and n_bit > 2
+        max_dec_value = self.get_n_cw_ringTrans2C(n_bit=n_bit) - 1
+        return max_dec_value
+
+    def get_n_cw_ringTrans2C(self, n_bit: int) -> int:
+        '''
+        Get the number of ring-2C-trans-CAC codewords with length of n_bit.
+        :param n_bit:
+        :return:
+        '''
+        assert isinstance(n_bit, int) and n_bit > 0
+        if n_bit == 1:
+            return 2
+        elif n_bit == 2:
+            return 3
+        else:
+            cnt_sat = 0
+            for dec_value in range(0, (2 ** n_bit)):
+                bin_str = bin(dec_value)[2:].zfill(n_bit)
+                bin_list = []
+                for char_i in bin_str:
+                    if char_i == "0":
+                        bin_list.append(0)
+                    elif char_i == "1":
+                        bin_list.append(1)
+                    else:
+                        assert False
+                bin_list.reverse()
+                bin_tuple = tuple(bin_list)
+                # Check
+                is_sat = self.ringCAC_trans_check(trans_tuple=bin_tuple, max_xtalk=2)
+                if is_sat is True:
+                    cnt_sat = cnt_sat + 1
+                else:
+                    assert is_sat is False
+            return cnt_sat
+
+
+    def get_n_cw_normalTrans2C(self, n_bit: int) -> int:
+        '''
+        Get the number of normal-2C-trans-CAC codewords with length of n_bit.
+        :param n_bit:
+        :return:
+        '''
+        assert isinstance(n_bit, int) and n_bit > 0
+        if n_bit == 1:
+            return 2
+        elif n_bit == 2:
+            return 3
+        else:
+            cnt_sat = 0
+            for dec_value in range(0, (2 ** n_bit)):
+                bin_str = bin(dec_value)[2:].zfill(n_bit)
+                bin_list = []
+                for char_i in bin_str:
+                    if char_i == "0":
+                        bin_list.append(0)
+                    elif char_i == "1":
+                        bin_list.append(1)
+                    else:
+                        assert False
+                bin_list.reverse()
+                bin_tuple = tuple(bin_list)
+                # Check
+                is_sat = self.normalCAC_trans_check(trans_tuple=bin_tuple, max_xtalk=2)
+                if is_sat is True:
+                    cnt_sat = cnt_sat + 1
+                else:
+                    assert is_sat is False
+            return cnt_sat
+
+    def ringCAC_trans_check(self, trans_tuple: tuple[int, ...], max_xtalk: int) -> bool:
+        '''
+        If the input codeword (trans) follows the ring-nC-trans-CAC rules.
+        ring-2C-trans-CAC: '11' is forbidden in the ring.
+        ring-3C-trans-CAC: '111' is forbidden in the ring.
+        :param trans_tuple:
+        :param max_xtalk:
+        :return:
+        '''
+        assert max_xtalk in (2, 3)
+        assert isinstance(trans_tuple, tuple)
+        is_sat = True
+        trans_list_extend = list(trans_tuple)
+        trans_list_extend.append(trans_tuple[0])
+        for idx_i in range(0, len(trans_tuple)):
+            assert trans_tuple[idx_i] in (0, 1)
+            if max_xtalk == 3 and (trans_tuple[idx_i - 1] + trans_tuple[idx_i] + trans_list_extend[idx_i + 1]) > 2:
+                is_sat = False
+            if max_xtalk == 2 and trans_tuple[idx_i] == 1 and (
+                    trans_tuple[idx_i - 1] + trans_list_extend[idx_i + 1]) > 0:
+                is_sat = False
+        return is_sat
+
+    def normalCAC_trans_check(self, trans_tuple: tuple[int, ...], max_xtalk: int) -> bool:
+        '''
+        If the input codeword (trans) follows the 2D-nC-trans-CAC rules.
+        2C-trans-CAC: '11' is forbidden in the codeword.
+        3C-trans-CAC: '111' is forbidden in the codeword.
+        :param trans_tuple:
+        :param max_xtalk:
+        :return:
+        '''
+        assert max_xtalk in (2, 3)
+        assert isinstance(trans_tuple, tuple)
+        is_sat = True
+        assert trans_tuple[0] in (0, 1)
+        assert trans_tuple[-1] in (0, 1)
+        for idx_i in range(1, (len(trans_tuple) - 1)):
+            assert trans_tuple[idx_i] in (0, 1)
+            if max_xtalk == 3 and (trans_tuple[idx_i - 1] + trans_tuple[idx_i] + trans_tuple[idx_i + 1]) > 2:
+                is_sat = False
+            if max_xtalk == 2 and trans_tuple[idx_i] == 1 and (
+                    trans_tuple[idx_i - 1] + trans_tuple[idx_i + 1]) > 0:
+                is_sat = False
+        return is_sat
+
+    def getParam_nsElement(self, seq_idx: int) -> int:
+        '''
+        Return the element with the idx of seq_idx in the NS seq.
+        The idx of first element is 0.
+        The value in seq idx=i is the number of  the 2D-2c-trans-cac codeword with the bit width of (i+1).
+
+        :param seq_idx:
+        :return:
+        '''
+        return self._param_nsTuple[seq_idx]
+
+    def encode(self, dec_value: int) -> tuple:
+        '''
+        Encode a dec value.
+        The first element (idx = 0) of the output tuple is the LSB!
+        :param dec_value:
+        :return:
+        '''
+        assert isinstance(dec_value, int) and 0 <= dec_value <= self.getParam_maxInputLimitation()
+        cw_list = []
+        res_value = dec_value
+        cw_length = self.getParam_cwLength()
+
+        # Generate MSB
+        if res_value >= self.getParam_nsElement(seq_idx=(cw_length - 2)):
+            cw_list.append(1)
+            cw_lsbLocked = True
+            res_value = res_value - self.getParam_nsElement(seq_idx=(cw_length - 2))
+        else:
+            cw_list.append(0)
+            cw_lsbLocked = False
+
+        # Generate other bits - Case 1
+        if cw_lsbLocked is False:
+            for idx_nsseq in range((cw_length - 3), -1, -1):
+                if cw_list[-1] == 1:
+                    cw_list.append(0)
+                elif res_value >= self.getParam_nsElement(seq_idx=idx_nsseq):
+                    cw_list.append(1)
+                    res_value = res_value - self.getParam_nsElement(seq_idx=idx_nsseq)
+                else:
+                    cw_list.append(0)
+            # LSB
+            if res_value == 0:
+                cw_list.append(0)
+            elif res_value == 1:
+                assert cw_list[-1] == 0
+                cw_list.append(1)
+            else:
+                assert False
+        # Generate other bits - Case 2
+        else:
+            assert cw_lsbLocked is True
+            for idx_nsseq in range((cw_length - 4), -1, -1):
+                if cw_list[-1] == 1:
+                    cw_list.append(0)
+                elif res_value >= self.getParam_nsElement(seq_idx=idx_nsseq):
+                    cw_list.append(1)
+                    res_value = res_value - self.getParam_nsElement(seq_idx=idx_nsseq)
+                else:
+                    cw_list.append(0)
+            # 2-bit LSB
+            if res_value == 0:
+                cw_list.append(0)
+            elif res_value == 1:
+                assert cw_list[-1] == 0
+                cw_list.append(1)
+            else:
+                assert False
+            cw_list.append(0)
+
+        assert len(cw_list) == self.getParam_cwLength()
+        cw_list.reverse()
+        cw_tuple = tuple(cw_list)
+        return cw_tuple
+
+    def decode(self, bin_tuple: tuple[int, ...]) -> int:
+        '''
+        Decoder.
+        The first element (idx=0) of the input bin_tuple should be the LSB!
+        :param bin_tuple:
+        :return:
+        '''
+        cw_length = self.getParam_cwLength()
+        assert isinstance(bin_tuple, tuple) and len(bin_tuple) == cw_length
+
+        # Decode MSB & LSB
+        if bin_tuple[-1] == 1:
+            assert bin_tuple[0] == 0
+            dec_value = self.getParam_nsElement(seq_idx=(cw_length - 2))
+        elif bin_tuple[-1] == 0:
+            assert bin_tuple[0] in (0, 1)
+            dec_value = bin_tuple[0]
+
+        # Decode other bits - Case 1
+        if bin_tuple[-1] == 1:
+            assert bin_tuple[1] in (0, 1)
+            dec_value = dec_value + bin_tuple[1]
+            for idx_cw in range(2, cw_length - 1):
+                assert bin_tuple[idx_cw] in (0, 1)
+                dec_value = dec_value + (bin_tuple[idx_cw] * self.getParam_nsElement(seq_idx=(idx_cw - 2)))
+        elif bin_tuple[-1] == 0:
+            for idx_cw in range(1, cw_length - 1):
+                assert bin_tuple[idx_cw] in (0, 1)
+                dec_value = dec_value + (bin_tuple[idx_cw] * self.getParam_nsElement(seq_idx=(idx_cw - 1)))
+
+        return dec_value
+
+
+
