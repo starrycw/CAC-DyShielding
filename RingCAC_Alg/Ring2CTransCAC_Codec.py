@@ -170,10 +170,20 @@ class Codec_Ring2CTransCAC:
         '''
         return self._param_nsTuple[seq_idx]
 
+    def getParam_nsTuple(self) -> tuple[int, ...]:
+        '''
+        Return the NS seq.
+        The idx of first element is 0.
+        The value in seq idx=i is the number of  the 2D-2c-trans-cac codeword with the bit width of (i+1).
+
+        :return:
+        '''
+        return copy.deepcopy(self._param_nsTuple)
+
     def encode(self, dec_value: int) -> tuple:
         '''
-        Encode a dec value.
-        The first element (idx = 0) of the output tuple is the LSB!
+        Encoder.
+        The first element (idx = 0) of the output tuple is the LSB.
         :param dec_value:
         :return:
         '''
@@ -268,4 +278,35 @@ class Codec_Ring2CTransCAC:
         return dec_value
 
 
+class Codec_Ring2CTransCAC_FNSBased(Codec_Ring2CTransCAC):
+    def __init__(self, len_cw):
+        super().__init__(len_cw)
 
+    def initialize_ns(self, n_element: int) -> tuple[int, ...]:
+        '''
+        NS generation - FNS-based implementation
+        :param n_element:
+        :return:
+        '''
+        assert isinstance(n_element, int) and n_element > 2
+        ns_list = [2, 3]
+        for nbit_i in range(3, n_element):
+            ns_list.append(ns_list[-1] + ns_list[-2])
+        ns_tuple = tuple(ns_list)
+        return ns_tuple
+
+    def get_n_cw_ringTrans2C(self, n_bit: int) -> int:
+        '''
+
+        :param n_bit:
+        :return:
+        '''
+        ncw_list = [2, 3, 4]
+        if n_bit > 3:
+            for nbit_ii in range(4, n_bit + 1):
+                ncw_list.append(ncw_list[-1] + ncw_list[-2])
+        self._param_codewordNumberTuple_byCodeLength = tuple(ncw_list)
+        return (ncw_list[-1] - 1)
+
+    def getParam_codewordNumberTuple_byCodeLength(self):
+        return copy.deepcopy(self._param_codewordNumberTuple_byCodeLength)

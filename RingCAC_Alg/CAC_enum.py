@@ -91,8 +91,8 @@ def calc_codeword_number_all(n_bit: int) -> tuple:
             else:
                 assert is_sat is False
 
-        print("No.{}--{}".format(cnt_all, cntList_sat))
-    print("###ALL={}\n SAT={}\n RuleName={}".format(cnt_all, cntList_sat, cntList_ruleName))
+        # print("No.{}--{}".format(cnt_all, cntList_sat))
+    print("CodewordLen={}: ALL={}\n SAT={} RuleName={} ".format(n_bit, cnt_all, cntList_sat, cntList_ruleName))
     return cnt_all, cntList_sat, cntList_ruleName
 
 def FTFCAC_cw_check(cw_tuple: tuple[int, ...]) -> bool:
