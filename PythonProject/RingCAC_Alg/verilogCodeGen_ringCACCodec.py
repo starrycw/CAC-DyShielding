@@ -27,15 +27,22 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
     vhCodeLines_list.append("// ------------------------------\n")
     vhCodeLines_list.append("// VAR_FNSCATF_DataInBitWidth\n")
 
-    for cwLen_i in (4, codeword_maxLength):
+    for cwLen_i in range(4, codeword_maxLength):
         CodecRingCAC_i = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSBased(len_cw=cwLen_i)
         maxDecValue_i = CodecRingCAC_i.getParam_maxInputLimitation()
         maxInputBitWidth = math.floor(math.log2(maxDecValue_i))
+        vhCodeLines_list.append("    `define VAR_FNSCATF_DataInBitWidth_{}bitCW {}\n".format(cwLen_i, maxInputBitWidth))
 
-
-
-
-
+    vhCodeLines_list.append("// ---------------------------------\n")
+    vhCodeLines_list.append("// VAR_FNSCATF_NSValue\n")
+    vhCodeLines_list.append("// The value of VAR_FNSCATF_NSValue_Pn is the number of the n-bit ATF (not CATF) codewords.\n")
+    nsValue_a = 1
+    nsValue_b = 1
+    for cwLen_k in range(2, codeword_maxLength):
+        nsValue_c = nsValue_a + nsValue_b
+        vhCodeLines_list.append("    `define VAR_FNSCATF_NSValue_P{} {}\n".format(cwLen_k, nsValue_c))
+        nsValue_a = nsValue_b
+        nsValue_b = nsValue_c
 
 
     if if_export_file is True:
