@@ -174,9 +174,12 @@ class CACCodebook:
     '''
     The graph structure of the CAC codebook.
     '''
-    def __init__(self, cw_len:int):
+    def __init__(self, cw_len:int, xtalk_evaluation_method='Ring2CDefault'):
         assert isinstance(cw_len, int) and cw_len > 1
         self._codebookProperty_codewordLength = cw_len # The bit-width of codewords.
+
+        # Configs
+        self._config_xtalkEvaluationMethod = copy.deepcopy(xtalk_evaluation_method)
 
         # Initialize
         self.initializeCodebook_allNodes()
@@ -186,9 +189,13 @@ class CACCodebook:
         self._varPruning_bestNodeObjListRecorded = []
         self._varPruning_bestIdListRecorded = []
 
+        self._varPruningAllInterconnected_bestDegreeRecorded = 0
+        self._varPruningAllInterconnected_bestNodeObjListRecorded = []
+        self._varPruningAllInterconnected_bestIdListRecorded = []
+
     ####################################################################################################################
     ### Initialization And Backup
-    def initializeCodebook_allNodes(self, ):
+    def initializeCodebook_allNodes(self):
         '''
         Initialize the ID list and the node object list for the CAC codebook.\n
         Be careful! This will replace the existing data in this codebook with a init one.
@@ -300,17 +307,20 @@ class CACCodebook:
 
     ####################################################################################################################
     ### Crosstalk Evaluation
-    def xtalkEvaluaion_transition(self, cwTuple_01: tuple[int, ...], cwTuple_02: tuple[int, ...], evaluation_method = 'Ring2CDefault') -> bool:
+    def xtalkEvaluaion_transition(self, cwTuple_01: tuple[int, ...], cwTuple_02: tuple[int, ...]) -> bool:
         '''
         Evaluate if the xtalk level of the transition cwTuple_01 --> cwTuple_02 is no more than a certain upper bound.\n
         This function is only an interface. The detailed evaluation method and the upper bound is implemented in other functions.\n
         :param cwTuple_01:
         :param cwTuple_02:
-        :param evaluation_method:
         :return:
         '''
-        if evaluation_method == 'Ring2CDefault':
+        if self._config_xtalkEvaluationMethod == 'Ring2CDefault':
             return self.xtalkEvaluation_Ring2CDefault(cwTuple_01=cwTuple_01, cwTuple_02=cwTuple_02)
+        elif self._config_xtalkEvaluationMethod == '2D2CDefault':
+            return self.xtalkEvaluation_2D2CDefault(cwTuple_01=cwTuple_01, cwTuple_02=cwTuple_02)
+        else:
+            assert False, "Invalid xtalkEvaluationMethod"
 
 
     @staticmethod
@@ -350,6 +360,48 @@ class CACCodebook:
                 return False
         else:
             assert cwDiffList[0] == 0
+
+        assert xtalk_is_sat is True
+        return True
+
+    @staticmethod
+    def xtalkEvaluation_2D2CDefault(cwTuple_01: tuple[int, ...], cwTuple_02: tuple[int, ...]) -> bool:
+        '''
+
+        :param cwTuple_01:
+        :param cwTuple_02:
+        :return:
+        '''
+        assert isinstance(cwTuple_01, tuple) and isinstance(cwTuple_02, tuple)
+        cw_length = len(cwTuple_01)
+        assert len(cwTuple_02) == cw_length
+        xtalk_is_sat = True
+        cwDiffList = []
+        for idx_i in range(0, cw_length):
+            cwDiffList.append(cwTuple_02[idx_i] - cwTuple_01[idx_i])
+        # All bits except MSB & LSB
+        for idx_i in range(1, cw_length - 1):
+            if cwDiffList[idx_i] in (-1, 1):
+                if (abs(cwDiffList[idx_i - 1] - cwDiffList[idx_i]) + abs(
+                        cwDiffList[idx_i + 1] - cwDiffList[idx_i])) > 2:
+                    xtalk_is_sat = False
+                    return False
+            else:
+                assert cwDiffList[idx_i] == 0
+        # # MSB
+        # if cwDiffList[-1] in (-1, 1):
+        #     if (abs(cwDiffList[-2] - cwDiffList[-1]) + abs(cwDiffList[0] - cwDiffList[-1])) > 2:
+        #         xtalk_is_sat = False
+        #         return False
+        # else:
+        #     assert cwDiffList[-1] == 0
+        # # LSB
+        # if cwDiffList[0] in (-1, 1):
+        #     if (abs(cwDiffList[-1] - cwDiffList[0]) + abs(cwDiffList[1] - cwDiffList[0])) > 2:
+        #         xtalk_is_sat = False
+        #         return False
+        # else:
+        #     assert cwDiffList[0] == 0
 
         assert xtalk_is_sat is True
         return True
@@ -404,33 +456,56 @@ class CACCodebook:
             if var_degreeValueOfNodesPruning < self._varPruning_degreeValueOfNodesPruning_lastCycle:
                 if self._varPruning_degreeValueOfNodesPruning_lastCycle >= self._varPruning_bestDegreeRecorded:
                     self._varPruning_bestDegreeRecorded = copy.deepcopy(self._varPruning_degreeValueOfNodesPruning_lastCycle)
-                    self._codebookPruning_recordBetterResult_recordBackups()
+                    self._codebookPruning_recordBetterResult_recordBackups(recordType="normal_maxDegree")
+                if (len(self._backup_codebookIdList) == self._varPruning_degreeValueOfNodesPruning_lastCycle) and (self._varPruning_degreeValueOfNodesPruning_lastCycle >= self._varPruningAllInterconnected_bestDegreeRecorded):
+                    self._varPruningAllInterconnected_bestDegreeRecorded = copy.deepcopy(self._varPruning_degreeValueOfNodesPruning_lastCycle)
+                    self._codebookPruning_recordBetterResult_recordBackups(recordType="allInterconnected_maxDegree")
                 if restoreTheNegativePruning is True:
                     self._backup_backup_restoreBackups()
                 flag_stop_pruning = True
-                print("[Pruning] Terminated! The min degree after last pruning is {}, which is no larger than that before ({})!".format(var_degreeValueOfNodesPruning, self._varPruning_degreeValueOfNodesPruning_lastCycle))
+                print("[Pruning] Terminated! The min degree after last pruning is {}, which is no larger than that before ({})! The new codebook contains {} nodes.".format(var_degreeValueOfNodesPruning, self._varPruning_degreeValueOfNodesPruning_lastCycle, self.getCodebookProperty_nodeNumber()))
 
             else:
                 self._backup_backupCurrentList()
                 self.codebookPruning_pruningOnce(idxAndIDList_nodes2BPruning=var_idxAndIDListOfNodesPruning)
                 self._varPruning_idxAndIDListOfNodesPruning_lastCycle = copy.deepcopy(var_idxAndIDListOfNodesPruning)
                 self._varPruning_degreeValueOfNodesPruning_lastCycle = copy.deepcopy(var_degreeValueOfNodesPruning)
-                print("[Pruning] Cycle={}, degree of nodes removed={}, number of nodes removed={}".format(cnt_pruningCycle, var_degreeValueOfNodesPruning, len(var_idxAndIDListOfNodesPruning)))
+                print("[Pruning] Cycle={}, degree of nodes removed={}, number of nodes removed={}, the new codebook contains {} nodes.".format(cnt_pruningCycle, var_degreeValueOfNodesPruning, len(var_idxAndIDListOfNodesPruning), self.getCodebookProperty_nodeNumber()))
 
-    def _codebookPruning_recordBetterResult_recordBackups(self):
+    def _codebookPruning_recordBetterResult_recordBackups(self, recordType):
         '''
-        Copy the 'backup' lists to the self._varPruning_bestIdListRecorded and self._varPruning_bestNodeObjListRecorded.
+        Copy the 'backup' lists to the record list.\n
+        recordType in ("normal_maxDegree", "allInterconnected_maxDegree")\n
+        "normal_maxDegree": Copy the 'backup' lists to the self._varPruning_bestIdListRecorded and self._varPruning_bestNodeObjListRecorded.\n
+        "allInterconnected_maxDegree": Copy the 'backup' lists to the self._varPruningAllInterconnected_bestIdListRecorded and self._varPruningAllInterconnected_bestNodeObjListRecorded.
+
+        :param recordType: String - in ("normal_maxDegree", "allInterconnected_maxDegree")
         :return:
         '''
-        self._varPruning_bestIdListRecorded = copy.deepcopy(self._backup_codebookIdList)
-        self._varPruning_bestNodeObjListRecorded = copy.deepcopy(self._backup_codebookNodeObjList)
+        #assert codebookType in ("normal_maxDegree", "allInterconnected_maxDegree")
+        if recordType == "normal_maxDegree":
+            self._varPruning_bestIdListRecorded = copy.deepcopy(self._backup_codebookIdList)
+            self._varPruning_bestNodeObjListRecorded = copy.deepcopy(self._backup_codebookNodeObjList)
+        elif recordType == "allInterconnected_maxDegree":
+            self._varPruningAllInterconnected_bestIdListRecorded = copy.deepcopy(self._backup_codebookIdList)
+            self._varPruningAllInterconnected_bestNodeObjListRecorded = copy.deepcopy(self._backup_codebookNodeObjList)
+        else:
+            assert False
 
-    def codebookPruning_getBestRecord(self):
+    def codebookPruning_getBestRecord(self, recordType):
         '''
-        Return copy.deepcopy(self._varPruning_bestDegreeRecorded), copy.deepcopy(self._varPruning_bestIdListRecorded), copy.deepcopy(self._varPruning_bestNodeObjListRecorded)
+        If recordType == "normal_maxDegree":
+        Return copy.deepcopy(self._varPruning_bestDegreeRecorded), copy.deepcopy(self._varPruning_bestIdListRecorded), copy.deepcopy(self._varPruning_bestNodeObjListRecorded)\n
+        if recordType == "allInterconnected_maxDegree":
+        Return copy.deepcopy(self._varPruningAllInterconnected_bestDegreeRecorded), copy.deepcopy(self._varPruningAllInterconnected_bestIdListRecorded), copy.deepcopy(self._varPruningAllInterconnected_bestNodeObjListRecorded)
         :return:
         '''
-        return copy.deepcopy(self._varPruning_bestDegreeRecorded), copy.deepcopy(self._varPruning_bestIdListRecorded), copy.deepcopy(self._varPruning_bestNodeObjListRecorded)
+        if recordType == "normal_maxDegree":
+            return copy.deepcopy(self._varPruning_bestDegreeRecorded), copy.deepcopy(self._varPruning_bestIdListRecorded), copy.deepcopy(self._varPruning_bestNodeObjListRecorded)
+        elif recordType == "allInterconnected_maxDegree":
+            return copy.deepcopy(self._varPruningAllInterconnected_bestDegreeRecorded), copy.deepcopy(self._varPruningAllInterconnected_bestIdListRecorded), copy.deepcopy(self._varPruningAllInterconnected_bestNodeObjListRecorded)
+        else:
+            assert False
 
     
 
@@ -532,4 +607,29 @@ class CACCodebook:
                 assert nodeDegree_i > candidate_degreeValue
         candidate_idxAndIDList.reverse()
         return copy.deepcopy(candidate_idxAndIDList), candidate_degreeValue
+
+    def codebookPruing_tryToExtendBestcodebook_extendAllInterconnectedNodes(self):
+        '''
+        This method try to add the removed nodes to the all-interconnected graph recorded in best list.
+        :return:
+        '''
+        localVarTryToExtend_candidateList = []
+        print("[Pruning-TryToExtend] There are {} nodes in the REMOVED list.".format(len(self._removed_idList)))
+        cnt_nNodesChecked = 0
+        for obj_removedNode_i in self._removed_nodeObjList:
+            assert isinstance(obj_removedNode_i, _CACCodewordNode)
+            if (obj_removedNode_i.getProperty_nodeID() not in self._varPruningAllInterconnected_bestIdListRecorded):
+                cnt_nNodesChecked = cnt_nNodesChecked + 1
+                if_sat = True
+                for obj_currentNode_k in self._varPruningAllInterconnected_bestNodeObjListRecorded:
+                    if self.xtalkEvaluaion_transition(cwTuple_01=(obj_removedNode_i.getProperty_codeword()), cwTuple_02=obj_currentNode_k.getProperty_codeword()) is False:
+                        if_sat = False
+                        break
+                    else:
+                        assert if_sat is True
+                if if_sat is True:
+                    localVarTryToExtend_candidateList.append(copy.deepcopy(obj_removedNode_i))
+        print("[Pruning-TryToExtend] There are {} nodes checked. {} nodes are restored.".format(cnt_nNodesChecked, len(localVarTryToExtend_candidateList)))
+        return localVarTryToExtend_candidateList
+
 

@@ -1,5 +1,3 @@
-import copy
-import math
+import RingCAC_Alg.verilogCodeGen_ringCACCodec
 
-import RingCAC_Alg.Ring2CTransCAC_Codec
-import RingCAC_Alg.CAC_enum
+RingCAC_Alg.verilogCodeGen_ringCACCodec.vhGen_FNSCATF_HeaderFiles(codeword_maxLength=10, if_export_file=True)
