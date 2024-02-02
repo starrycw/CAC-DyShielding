@@ -1,3 +1,3 @@
 import RingCAC_Alg.verilogCodeGen_ringCACCodec
 
-RingCAC_Alg.verilogCodeGen_ringCACCodec.vhGen_FNSCATF_HeaderFiles(codeword_maxLength=10, if_export_file=True)
+RingCAC_Alg.verilogCodeGen_ringCACCodec.vhGen_FNSCATF_HeaderFiles(codeword_maxLength=12, if_export_file=False)
