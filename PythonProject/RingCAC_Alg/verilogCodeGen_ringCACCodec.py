@@ -22,7 +22,7 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
     if export_filePath is None:
         export_filePath = "exported_files/verilogCodeGen_ringCACCodec-{}.vh".format(note_timestring)
 
-    vhCodeLines_list.append("// verilogCodeGen_ringCACCodec [ver = 202402-01] [Creation Time = " + note_timestring + ']\n')
+    vhCodeLines_list.append("// verilogCodeGen_ringCACCodec [ver = 20240219-01] [Creation Time = " + note_timestring + ']\n')
     vhCodeLines_list.append("// codeword_maxLength={}\n".format(codeword_maxLength))
     vhCodeLines_list.append("// ------------------------------\n")
     vhCodeLines_list.append("// ------------------------------\n")
@@ -42,13 +42,16 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
 
     vhCodeLines_list.append("\n")
     vhCodeLines_list.append("    // ---------------------------------\n")
-    vhCodeLines_list.append("    // VH_FNSCATF_NSValue\n")
+    vhCodeLines_list.append("    // VH_FNSCATF_NSValue & VH_FNSCATF_NSValueMaxBinWidth\n")
     vhCodeLines_list.append("    // The value of VH_FNSCATF_NSValue_Pn is the number of the n-bit ATF (not CATF) codewords.\n")
+    vhCodeLines_list.append("    // The value of VH_FNSCATF_NSValueMaxBinWidth_Pn is the bit-width of VH_FNSCATF_NSValue_P.\n")
     nsValue_a = 1
     nsValue_b = 1
-    for cwLen_k in range(2, codeword_maxLength + 1):
+    for cwLen_k in range(1, codeword_maxLength + 1):
         nsValue_c = nsValue_a + nsValue_b
         vhCodeLines_list.append("    `define VH_FNSCATF_NSValue_P{} {}\n".format(cwLen_k, nsValue_c))
+        ns_valuec_binWidthCeil = math.ceil(math.log2(nsValue_c))
+        vhCodeLines_list.append("    `define VH_FNSCATF_NSValueMaxBinWidth_P{} {}\n".format(cwLen_k, ns_valuec_binWidthCeil))
         nsValue_a = nsValue_b
         nsValue_b = nsValue_c
 
