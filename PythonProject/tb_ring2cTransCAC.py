@@ -32,7 +32,7 @@ if False: # Codebook Calc - 01
         RingCAC_Alg.CAC_enum.calc_codeword_number_all(n_bit=len_cw)
 
 
-if False: # Bit Overhead Calc - 01
+if True: # Bit Overhead Calc - 01
     for len_cw in range(4, 21):
         Codec001 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC(len_cw=len_cw)
         max_cw_value = Codec001.getParam_maxInputLimitation()
@@ -47,7 +47,7 @@ if False: # Bit Overhead Calc - 01
     print(Codec002.getParam_codewordNumberTuple_byCodeLength())
     print(Codec002.getParam_nsTuple())
 
-if True: # Bit Overhead Calc - 02
+if False: # Bit Overhead Calc - 02
     for len_cw in range(4, 101):
         Codec002 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSBased(len_cw=len_cw)
         max_cw_value = Codec002.getParam_maxInputLimitation()

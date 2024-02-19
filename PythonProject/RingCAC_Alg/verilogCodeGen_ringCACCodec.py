@@ -18,16 +18,21 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
     assert isinstance(codeword_maxLength, int) and (codeword_maxLength > 3)
 
     vhCodeLines_list = []
-    note_timestring = datetime.datetime.now().strftime('%Y.%m.%d-%H:%M:%S')
+    note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
     if export_filePath is None:
-        export_filePath = "exported_files/verilogCodeGen_ringCACCodec_{}.vh".format(note_timestring)
+        export_filePath = "exported_files/verilogCodeGen_ringCACCodec-{}.vh".format(note_timestring)
+
     vhCodeLines_list.append("// verilogCodeGen_ringCACCodec [ver = 202402-01] [Creation Time = " + note_timestring + ']\n')
     vhCodeLines_list.append("// codeword_maxLength={}\n".format(codeword_maxLength))
     vhCodeLines_list.append("// ------------------------------\n")
     vhCodeLines_list.append("// ------------------------------\n")
-    vhCodeLines_list.append("// VH_FNSCATF_DataInBitWidth\n")
-    vhCodeLines_list.append("// The value of VH_FNSCATF_DataInBitWidth_[i]bitCW is the max input data bitwidth of the encoder generating i-bit codeword. \n")
-    vhCodeLines_list.append("// For example: input wire [`VH_FNSCATF_DataInBitWidth_7bitCW - 1 : 0] datain")
+    vhCodeLines_list.append("`ifndef __FNSCATF_HEADER__\n")
+    vhCodeLines_list.append("    `define __FNSCATF_HEADER__\n")
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("    // ------------------------------\n")
+    vhCodeLines_list.append("    // VH_FNSCATF_DataInBitWidth\n")
+    vhCodeLines_list.append("    // The value of VH_FNSCATF_DataInBitWidth_[i]bitCW is the max input data bitwidth of the encoder generating i-bit codeword. \n")
+    vhCodeLines_list.append("    // For example: input wire [`VH_FNSCATF_DataInBitWidth_7bitCW - 1 : 0] datain\n")
 
     for cwLen_i in range(4, codeword_maxLength + 1):
         CodecRingCAC_i = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSBased(len_cw=cwLen_i)
@@ -35,9 +40,10 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
         maxInputBitWidth = math.floor(math.log2(maxDecValue_i))
         vhCodeLines_list.append("    `define VH_FNSCATF_DataInBitWidth_{}bitCW {}\n".format(cwLen_i, maxInputBitWidth))
 
-    vhCodeLines_list.append("// ---------------------------------\n")
-    vhCodeLines_list.append("// VH_FNSCATF_NSValue\n")
-    vhCodeLines_list.append("// The value of VH_FNSCATF_NSValue_Pn is the number of the n-bit ATF (not CATF) codewords.\n")
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("    // ---------------------------------\n")
+    vhCodeLines_list.append("    // VH_FNSCATF_NSValue\n")
+    vhCodeLines_list.append("    // The value of VH_FNSCATF_NSValue_Pn is the number of the n-bit ATF (not CATF) codewords.\n")
     nsValue_a = 1
     nsValue_b = 1
     for cwLen_k in range(2, codeword_maxLength + 1):
@@ -45,6 +51,9 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
         vhCodeLines_list.append("    `define VH_FNSCATF_NSValue_P{} {}\n".format(cwLen_k, nsValue_c))
         nsValue_a = nsValue_b
         nsValue_b = nsValue_c
+
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("`endif\n")
 
 
     if if_export_file is True:

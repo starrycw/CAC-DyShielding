@@ -270,6 +270,7 @@ class Codec_Ring2CTransCAC:
             for idx_cw in range(2, cw_length - 1):
                 assert bin_tuple[idx_cw] in (0, 1)
                 dec_value = dec_value + (bin_tuple[idx_cw] * self.getParam_nsElement(seq_idx=(idx_cw - 2)))
+        # Decode other bits - Case 2
         elif bin_tuple[-1] == 0:
             for idx_cw in range(1, cw_length - 1):
                 assert bin_tuple[idx_cw] in (0, 1)

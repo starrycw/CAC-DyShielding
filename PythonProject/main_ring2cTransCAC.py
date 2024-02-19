@@ -5,7 +5,7 @@ import RingCAC_Alg.Ring2CTransCAC_Codec
 import RingCAC_Alg.CAC_enum
 
 
-if False: # Codec
+if True: # Codec
     for len_cw in range(4, 21):
         Codec001 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC(len_cw=len_cw)
         max_input = Codec001.getParam_maxInputLimitation()
@@ -16,7 +16,7 @@ if False: # Codec
             assert dec_in == decoder_out
             assert RingCAC_Alg.CAC_enum.ringCAC_trans_check(trans_tuple=cw_tuple, max_xtalk=2)
 
-if True: # Bit Overhead Calc
+if False: # Bit Overhead Calc
     for len_cw in range(4, 21):
         Codec001 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC(len_cw=len_cw)
         max_cw_value = Codec001.getParam_maxInputLimitation()
