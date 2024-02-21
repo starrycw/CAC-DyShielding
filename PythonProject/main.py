@@ -1,3 +1,7 @@
 import RingCAC_Alg.verilogCodeGen_ringCACCodec
 
-RingCAC_Alg.verilogCodeGen_ringCACCodec.vhGen_FNSCATF_HeaderFiles(codeword_maxLength=100, if_export_file=True)
+codeword_len = 9
+
+RingCAC_Alg.verilogCodeGen_ringCACCodec.vGen_FNSCATF_EncoderCore(codeword_bitwidth=codeword_len, if_export_file=True)
+RingCAC_Alg.verilogCodeGen_ringCACCodec.vGen_FNSCATF_DecoderCore(codeword_bitwidth=codeword_len, if_export_file=True)
+RingCAC_Alg.verilogCodeGen_ringCACCodec.svGen_tb_FNSCATF_CodecCore(codeword_bitwidth=codeword_len, if_export_file=True, n_simuCycle=10000)

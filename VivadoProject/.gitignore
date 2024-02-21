@@ -86,3 +86,11 @@
 !*.elf
 !*.bmm
 !*.xmp
+
+############################################
+######################### USER DEFINED RULES
+# Simulation Files
+/CAC_Codec/CAC_Codec.sim/
+/CAC_Codec/CAC_Codec.cache/
+/CAC_Codec/CAC_Codec.hw/
+/CAC_Codec/CAC_Codec.ip_user_files/
