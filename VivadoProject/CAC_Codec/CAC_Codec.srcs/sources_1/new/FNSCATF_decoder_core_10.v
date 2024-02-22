@@ -2,20 +2,21 @@
 //////////////////////////////////////////////////////////////////////////////////
 // verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = 2024_02_22-21_06_53]
 // The core logic of the FNS-CATF decoder.
-// codeword_bitwidth=9
+// codeword_bitwidth=10
 //////////////////////////////////////////////////////////////////////////////////
 
 `include "VHeader_FNSCATF.vh"
 
-module FNSCATF_decoder_core_9(
-    input wire [8 : 0] codein,
-    output wire [`VH_FNSCATF_DataInBitWidth_9bitCW - 1 : 0] dataout
+module FNSCATF_decoder_core_10(
+    input wire [9 : 0] codein,
+    output wire [`VH_FNSCATF_DataInBitWidth_10bitCW - 1 : 0] dataout
     );
 
-    wire [7 : 0] code_q;
+    wire [8 : 0] code_q;
 
-    assign code_q[7 : 0] = (codein[8] == 1'b0)? (codein[7 : 0]) : ({1'b0, codein[7 : 1]});
-    assign dataout = (codein[8] * `VH_FNSCATF_NSValue_P8) + 
+    assign code_q[8 : 0] = (codein[9] == 1'b0)? (codein[8 : 0]) : ({1'b0, codein[8 : 1]});
+    assign dataout = (codein[9] * `VH_FNSCATF_NSValue_P9) + 
+                        (code_q[8] * `VH_FNSCATF_NSValue_P8) + 
                         (code_q[7] * `VH_FNSCATF_NSValue_P7) + 
                         (code_q[6] * `VH_FNSCATF_NSValue_P6) + 
                         (code_q[5] * `VH_FNSCATF_NSValue_P5) + 

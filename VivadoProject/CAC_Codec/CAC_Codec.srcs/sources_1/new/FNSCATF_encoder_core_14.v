@@ -1,30 +1,76 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = 2024_02_22-21_06_53]
+// verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = 2024_02_22-21_06_54]
 // The core logic of the FNS-CATF encoder.
-// codeword_bitwidth=9
+// codeword_bitwidth=14
 //////////////////////////////////////////////////////////////////////////////////
 
 `include "VHeader_FNSCATF.vh"
 
-module FNSCATF_encoder_core_9(
-    input wire [`VH_FNSCATF_DataInBitWidth_9bitCW - 1 : 0] datain,
-    output wire [8 : 0] codeout
+module FNSCATF_encoder_core_14(
+    input wire [`VH_FNSCATF_DataInBitWidth_14bitCW - 1 : 0] datain,
+    output wire [13 : 0] codeout
     );
 
-    wire [8 : 0] q_out;
+    wire [13 : 0] q_out;
 
     // MSB
-    wire [`VH_FNSCATF_NSValueMaxBinWidth_P8 - 1 : 0] res_block8;
-    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_DataInBitWidth_9bitCW), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P8), .NS_VALUE(`VH_FNSCATF_NSValue_P8)) 
-        cmp_module8 (
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P13 - 1 : 0] res_block13;
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_DataInBitWidth_14bitCW), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P13), .NS_VALUE(`VH_FNSCATF_NSValue_P13)) 
+        cmp_module13 (
             .res_in(datain),
             .lock_in(1'b0),
-            .q_out(q_out[8]),
-            .res_out(res_block8)
+            .q_out(q_out[13]),
+            .res_out(res_block13)
         );
     ///////////////////////////////////////////////////////////// 
     // The following two bits
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P12 - 1 : 0] res_block12;
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P13), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P12), .NS_VALUE(`VH_FNSCATF_NSValue_P12)) 
+        cmp_module12 (
+            .res_in(res_block13),
+            .lock_in(q_out[13]),
+            .q_out(q_out[12]),
+            .res_out(res_block12)
+        );
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P11 - 1 : 0] res_block11;
+    wire lock_12 = q_out[13] | q_out[12];
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P12), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P11), .NS_VALUE(`VH_FNSCATF_NSValue_P11)) 
+        cmp_module11 (
+            .res_in(res_block12),
+            .lock_in(lock_12),
+            .q_out(q_out[11]),
+            .res_out(res_block11)
+        );
+    ///////////////////////////////////////////////////////////// 
+    // Other bits
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P10 - 1 : 0] res_block10;
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P11), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P10), .NS_VALUE(`VH_FNSCATF_NSValue_P10)) 
+        cmp_module10 (
+            .res_in(res_block11),
+            .lock_in(q_out[11]),
+            .q_out(q_out[10]),
+            .res_out(res_block10)
+        );
+
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P9 - 1 : 0] res_block9;
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P10), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P9), .NS_VALUE(`VH_FNSCATF_NSValue_P9)) 
+        cmp_module9 (
+            .res_in(res_block10),
+            .lock_in(q_out[10]),
+            .q_out(q_out[9]),
+            .res_out(res_block9)
+        );
+
+    wire [`VH_FNSCATF_NSValueMaxBinWidth_P8 - 1 : 0] res_block8;
+    FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P9), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P8), .NS_VALUE(`VH_FNSCATF_NSValue_P8)) 
+        cmp_module8 (
+            .res_in(res_block9),
+            .lock_in(q_out[9]),
+            .q_out(q_out[8]),
+            .res_out(res_block8)
+        );
+
     wire [`VH_FNSCATF_NSValueMaxBinWidth_P7 - 1 : 0] res_block7;
     FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P8), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P7), .NS_VALUE(`VH_FNSCATF_NSValue_P7)) 
         cmp_module7 (
@@ -33,17 +79,16 @@ module FNSCATF_encoder_core_9(
             .q_out(q_out[7]),
             .res_out(res_block7)
         );
+
     wire [`VH_FNSCATF_NSValueMaxBinWidth_P6 - 1 : 0] res_block6;
-    wire lock_7 = q_out[8] | q_out[7];
     FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P7), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P6), .NS_VALUE(`VH_FNSCATF_NSValue_P6)) 
         cmp_module6 (
             .res_in(res_block7),
-            .lock_in(lock_7),
+            .lock_in(q_out[7]),
             .q_out(q_out[6]),
             .res_out(res_block6)
         );
-    ///////////////////////////////////////////////////////////// 
-    // Other bits
+
     wire [`VH_FNSCATF_NSValueMaxBinWidth_P5 - 1 : 0] res_block5;
     FNSCATF_encoderModule_cmp #(.RES_IN_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P6), .RES_OUT_WIDTH(`VH_FNSCATF_NSValueMaxBinWidth_P5), .NS_VALUE(`VH_FNSCATF_NSValue_P5)) 
         cmp_module5 (
@@ -93,8 +138,8 @@ module FNSCATF_encoder_core_9(
     ///////////////////////////////////////////////////////////////
 
     // Shift
-    assign codeout[8] = q_out[8];
-    assign codeout[7 : 1] = (q_out[8] == 1'b0)? (q_out[7 : 1]) : (q_out[6 : 0]);
-    assign codeout[0] = (q_out[8] == 1'b0)? (q_out[0]) : (1'b0);
+    assign codeout[13] = q_out[13];
+    assign codeout[12 : 1] = (q_out[13] == 1'b0)? (q_out[12 : 1]) : (q_out[11 : 0]);
+    assign codeout[0] = (q_out[13] == 1'b0)? (q_out[0]) : (1'b0);
 
 endmodule

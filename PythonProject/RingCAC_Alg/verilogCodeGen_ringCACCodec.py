@@ -70,7 +70,7 @@ def vhGen_FNSCATF_HeaderFiles(codeword_maxLength: int, if_export_file=False, exp
 
 def vGen_FNSCATF_EncoderCore(codeword_bitwidth, if_export_file=False, export_filePath=None):
     '''
-    Generate the verilog design of the FNSCATF-CAC encoder.
+    Generate the verilog design of the FNSCATF-CAC encoder (core logic).
 
     :param codeword_bitwidth:
     :param if_export_file:
@@ -104,8 +104,8 @@ def vGen_FNSCATF_EncoderCore(codeword_bitwidth, if_export_file=False, export_fil
 
     # Module Head
     vhCodeLines_list.append("module FNSCATF_encoder_core_{}(\n".format(codeword_bitwidth))
-    vhCodeLines_list.append("    input [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] datain,\n".format(codeword_bitwidth))
-    vhCodeLines_list.append("    output [{} : 0] codeout\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    input wire [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] datain,\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    output wire [{} : 0] codeout\n".format(codeword_bitwidth - 1))
     vhCodeLines_list.append("    );\n")
     vhCodeLines_list.append("\n")
 
@@ -205,7 +205,7 @@ def vGen_FNSCATF_EncoderCore(codeword_bitwidth, if_export_file=False, export_fil
 
 def vGen_FNSCATF_DecoderCore(codeword_bitwidth, if_export_file=False, export_filePath=None):
     '''
-    Generate the verilog design of the FNSCATF-CAC decoder.
+    Generate the verilog design of the FNSCATF-CAC decoder (core logic).
 
     :param codeword_bitwidth:
     :param if_export_file:
@@ -240,8 +240,8 @@ def vGen_FNSCATF_DecoderCore(codeword_bitwidth, if_export_file=False, export_fil
     # Module Head
     vhCodeLines_list.append("module FNSCATF_decoder_core_{}(\n".format(codeword_bitwidth))
     vhCodeLines_list.append(
-        "    input [{} : 0] codein,\n".format(codeword_bitwidth - 1))
-    vhCodeLines_list.append("    output [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] dataout\n".format(codeword_bitwidth))
+        "    input wire [{} : 0] codein,\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    output wire [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] dataout\n".format(codeword_bitwidth))
     vhCodeLines_list.append("    );\n")
     vhCodeLines_list.append("\n")
 
@@ -392,7 +392,328 @@ def svGen_tb_FNSCATF_CodecCore(codeword_bitwidth, if_export_file=False, export_f
         print(codeLine_i)
 
 
+def vGen_FNSCATF_EncoderTop(codeword_bitwidth, if_export_file=False, export_filePath=None):
+    '''
+    Generate the verilog design of the FNSCATF-CAC encoder (top design).
+
+    :param codeword_bitwidth:
+    :param if_export_file:
+    :param export_filePath:
+    :return:
+    '''
+
+    assert if_export_file in (True, False), "export_file"
+    assert isinstance(codeword_bitwidth, int) and (codeword_bitwidth > 3)
+
+    if codeword_bitwidth < 10:
+        cwLenStr = '0' + str(codeword_bitwidth)
+    else:
+        cwLenStr = str(codeword_bitwidth)
+
+    vhCodeLines_list = []
+    note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
+    if export_filePath is None:
+        export_filePath = "exported_files/verilogCodeGen_FNSCATFEncoderTop{}-{}.v".format(codeword_bitwidth, note_timestring)
+
+    vhCodeLines_list.append("`timescale 1ns / 1ps\n")
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append(
+        "// verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = " + note_timestring + ']\n')
+    vhCodeLines_list.append("// The top logic of the FNS-CATF encoder.\n")
+    vhCodeLines_list.append("// codeword_bitwidth={}\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("`include \"VHeader_FNSCATF.vh\"\n")
+    vhCodeLines_list.append("\n")
+
+    # Module Head
+    vhCodeLines_list.append("module FNSCATF_encoder_top_{}(\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    input wire clk,\n")
+    vhCodeLines_list.append("    input wire rst_n,\n")
+    vhCodeLines_list.append("    input wire [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] datain,\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    output reg [{} : 0] codeword_regs\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    );\n")
+    vhCodeLines_list.append("\n")
+
+    # def
+    vhCodeLines_list.append("    wire [{} : 0] codeout;\n".format(codeword_bitwidth - 1))
+    # vhCodeLines_list.append("    reg [{} : 0] codeword_last;\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    wire [{} : 0] codeword_new = codeword_regs[{} : 0] ^ codeout[{} : 0];\n".format(
+        codeword_bitwidth - 1, codeword_bitwidth - 1, codeword_bitwidth - 1))
+    vhCodeLines_list.append("\n")
+
+    # Core logic
+    vhCodeLines_list.append("    FNSCATF_encoder_core_{} encoderCore_instance_{} (\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("        .datain(datain),\n")
+    vhCodeLines_list.append("        .codeout(codeout)\n")
+    vhCodeLines_list.append("    );\n")
 
 
+    # Codeword regs
+    vhCodeLines_list.append("    always @(posedge clk or negedge rst_n) begin\n")
+    vhCodeLines_list.append("        if (~rst_n) begin\n")
+    vhCodeLines_list.append("            codeword_regs[{} : 0] <= {} {}{}1'b0{} {};\n".format(
+        codeword_bitwidth - 1, "{", codeword_bitwidth, "{", "}", "}"))
+    # vhCodeLines_list.append("            codeword_last[{} : 0] <= {} {}{}1'b0{} {};\n".format(
+    #     codeword_bitwidth - 1, "{", codeword_bitwidth, "{", "}", "}"))
+    vhCodeLines_list.append("        end\n")
+    vhCodeLines_list.append("        else begin\n")
+    vhCodeLines_list.append("            codeword_regs[{} : 0] <= codeword_new;\n".format(
+        codeword_bitwidth - 1))
+    vhCodeLines_list.append("        end\n")
+    vhCodeLines_list.append("    end\n")
+
+    # vhCodeLines_list.append("    always @(negedge clk) begin\n")
+    # vhCodeLines_list.append("        codeword_last <= codeword_regs;\n")
+    # vhCodeLines_list.append("    end\n")
 
 
+    # end
+    vhCodeLines_list.append("endmodule")
+
+    if if_export_file is True:
+        with open(export_filePath, 'w') as f:
+            f.writelines(vhCodeLines_list)
+
+        f.close()
+
+    for codeLine_i in vhCodeLines_list:
+        print(codeLine_i)
+
+
+def vGen_FNSCATF_DecoderTop(codeword_bitwidth, if_export_file=False, export_filePath=None):
+    '''
+    Generate the verilog design of the FNSCATF-CAC decoder (top design).
+
+    :param codeword_bitwidth:
+    :param if_export_file:
+    :param export_filePath:
+    :return:
+    '''
+
+    assert if_export_file in (True, False), "export_file"
+    assert isinstance(codeword_bitwidth, int) and (codeword_bitwidth > 3)
+
+    if codeword_bitwidth < 10:
+        cwLenStr = '0' + str(codeword_bitwidth)
+    else:
+        cwLenStr = str(codeword_bitwidth)
+
+    vhCodeLines_list = []
+    note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
+    if export_filePath is None:
+        export_filePath = "exported_files/verilogCodeGen_FNSCATFDecoderTop{}-{}.v".format(codeword_bitwidth, note_timestring)
+
+    vhCodeLines_list.append("`timescale 1ns / 1ps\n")
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append(
+        "// verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = " + note_timestring + ']\n')
+    vhCodeLines_list.append("// The top logic of the FNS-CATF decoder.\n")
+    vhCodeLines_list.append("// codeword_bitwidth={}\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("`include \"VHeader_FNSCATF.vh\"\n")
+    vhCodeLines_list.append("\n")
+
+    # Module Head
+    vhCodeLines_list.append("module FNSCATF_decoder_top_{}(\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    input wire clk,\n")
+    vhCodeLines_list.append("    input wire rst_n,\n")
+    vhCodeLines_list.append("    input wire [{} : 0] codeword_in,\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    output reg [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] data_reg\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    );\n")
+    vhCodeLines_list.append("\n")
+
+    # def
+    vhCodeLines_list.append("    reg [{} : 0] code_reg;\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    wire [{} : 0] code_in = code_reg[{} : 0] ^ codeword_in[{} : 0];\n".format(
+        codeword_bitwidth - 1, codeword_bitwidth - 1, codeword_bitwidth - 1))
+    vhCodeLines_list.append("    wire [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] data_out;\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("\n")
+
+    # Core logic
+    vhCodeLines_list.append("    FNSCATF_decoder_core_{} docoderCore_instance_{} (\n".format(
+        codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("        .codein(code_in),\n")
+    vhCodeLines_list.append("        .dataout(data_out)\n")
+    vhCodeLines_list.append("    );\n")
+    vhCodeLines_list.append("\n")
+
+    # Regs
+    vhCodeLines_list.append("    always @(posedge clk or negedge rst_n) begin\n")
+    vhCodeLines_list.append("        if (~rst_n) begin\n")
+    vhCodeLines_list.append("            data_reg[`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] <= {} `VH_FNSCATF_DataInBitWidth_{}bitCW{}1'b0{} {};\n".format(
+        codeword_bitwidth, "{", codeword_bitwidth, "{", "}", "}"))
+    vhCodeLines_list.append("            code_reg[{} : 0] <= {} {}{}1'b0{} {};\n".format(
+        codeword_bitwidth - 1, "{", codeword_bitwidth - 1, "{", "}", "}"))
+    vhCodeLines_list.append("        end\n")
+    vhCodeLines_list.append("        else begin\n")
+    vhCodeLines_list.append("            data_reg <= data_out;\n")
+    vhCodeLines_list.append("            code_reg <= codeword_in;\n")
+    vhCodeLines_list.append("        end\n")
+    vhCodeLines_list.append("    end\n")
+    vhCodeLines_list.append("\n")
+
+    # End
+    vhCodeLines_list.append("endmodule")
+
+    if if_export_file is True:
+        with open(export_filePath, 'w') as f:
+            f.writelines(vhCodeLines_list)
+
+        f.close()
+
+    for codeLine_i in vhCodeLines_list:
+        print(codeLine_i)
+
+
+def svGen_tb_FNSCATF_CodecTop(codeword_bitwidth, if_export_file=False, export_filePath=None, n_simuCycle = 10000):
+    '''
+    Generate the tb of the FNSCATF-CAC codec.
+
+    :param codeword_bitwidth:
+    :param if_export_file:
+    :param export_filePath:
+    :param n_simuCycle:
+    :return:
+    '''
+    assert if_export_file in (True, False), "export_file"
+    assert isinstance(codeword_bitwidth, int) and (codeword_bitwidth > 3)
+    assert isinstance(n_simuCycle, int) and n_simuCycle >= 1
+
+    if codeword_bitwidth < 10:
+        cwLenStr = '0' + str(codeword_bitwidth)
+    else:
+        cwLenStr = str(codeword_bitwidth)
+
+    vhCodeLines_list = []
+    note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
+    if export_filePath is None:
+        export_filePath = "exported_files/verilogCodeGen_tb_FNSCATFCodecTop{}-{}.sv".format(codeword_bitwidth,
+                                                                                        note_timestring)
+
+    vhCodeLines_list.append("`timescale 1ns / 1ps\n")
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append(
+        "// verilogCodeGen_ringCACCodec [ver = 20240221-01] [Creation Time = " + note_timestring + ']\n')
+    vhCodeLines_list.append("// The testbench of the FNS-CATF encoder & decoder.\n")
+    vhCodeLines_list.append("// codeword_bitwidth={}\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("//////////////////////////////////////////////////////////////////////////////////\n")
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("`include \"VHeader_FNSCATF.vh\"\n")
+    vhCodeLines_list.append("\n")
+
+    # Module header
+    vhCodeLines_list.append("module tb_FNSCATF_codecTop{}(\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("    );\n")
+
+    # param
+    vhCodeLines_list.append("    parameter N_SIMU_CYCLE = {};\n".format(n_simuCycle))
+
+    # Clk & rst & regs
+    vhCodeLines_list.append("    reg clk_encoder, clk_decoder, rst_n;\n")
+    vhCodeLines_list.append("    reg [{} : 0] tsvLast;\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("    wire [{} : 0] tsvTrans;\n".format(codeword_bitwidth - 1))
+
+
+    # instance
+    vhCodeLines_list.append("    // {}-bit codec core\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    reg [{} : 0] tsv_{};\n".format(codeword_bitwidth - 1, codeword_bitwidth))
+    vhCodeLines_list.append("    reg [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] datain_{};\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("    reg [`VH_FNSCATF_DataInBitWidth_{}bitCW - 1 : 0] dataout_{};\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("    assign tsvTrans = tsvLast ^ tsv_{};\n".format(codeword_bitwidth))
+
+    vhCodeLines_list.append("    FNSCATF_encoder_top_{} encoder_instance{} (\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("        .clk(clk_encoder),\n")
+    vhCodeLines_list.append("        .rst_n(rst_n),\n")
+    vhCodeLines_list.append("        .datain(datain_{}),\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("        .codeword_regs(tsv_{})\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    );\n")
+    vhCodeLines_list.append("\n")
+
+    vhCodeLines_list.append("    FNSCATF_decoder_top_{} decoder_instance{} (\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("        .clk(clk_decoder),\n")
+    vhCodeLines_list.append("        .rst_n(rst_n),\n")
+    vhCodeLines_list.append("        .codeword_in(tsv_{}),\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("        .data_reg(dataout_{})\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("    );\n")
+    vhCodeLines_list.append("\n")
+
+    # simulation
+    vhCodeLines_list.append("    static int cnt_i, cnt_err, cnt_pass, cnt_violate, idx_i;\n")
+    vhCodeLines_list.append("\n")
+
+    vhCodeLines_list.append("    initial begin\n")
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        rst_n <= 1;\n")
+    vhCodeLines_list.append("        clk_encoder <= 0;\n")
+    vhCodeLines_list.append("        clk_decoder <= 0;\n")
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        rst_n <= 0;\n")
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        rst_n <= 1;\n")
+    vhCodeLines_list.append("        tsv_{} <= 0;\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("        tsvLast <= 0;\n")
+    vhCodeLines_list.append("        datain_{} <= 0;\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        clk_encoder <= 1;\n")
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        clk_decoder <= 1;\n")
+    vhCodeLines_list.append("        #1;\n")
+    vhCodeLines_list.append("        for (cnt_i = 0; cnt_i < N_SIMU_CYCLE; cnt_i++) begin: for_cnt_i\n")
+    vhCodeLines_list.append("            #1;\n")
+    vhCodeLines_list.append("            clk_encoder <= 0;\n")
+    vhCodeLines_list.append("            clk_decoder <= 0;\n")
+    vhCodeLines_list.append("            tsvLast <= tsv_{};\n".format(codeword_bitwidth))
+    vhCodeLines_list.append("            datain_{} = {} % (2**(`VH_FNSCATF_DataInBitWidth_{}bitCW));\n".format(codeword_bitwidth, "{$random}", codeword_bitwidth))
+    vhCodeLines_list.append("\n")
+    vhCodeLines_list.append("            #1;\n")
+    vhCodeLines_list.append("            clk_encoder <= 1;\n")
+    vhCodeLines_list.append("            #1;\n")
+    vhCodeLines_list.append("            clk_decoder <= 1;\n")
+    vhCodeLines_list.append("            #1;\n")
+    vhCodeLines_list.append("            if (dataout_{} != datain_{}) begin\n".format(codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("                cnt_err = cnt_err + 1;\n")
+    vhCodeLines_list.append("                $display(\"CODEC{}-%d-ERROR: %d -> %b -> %d\", cnt_i, datain_{}, tsv_{}, dataout_{});\n".format(
+        codeword_bitwidth, codeword_bitwidth, codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("            end\n")
+    vhCodeLines_list.append("            else begin\n")
+    vhCodeLines_list.append("                cnt_pass = cnt_pass + 1;\n")
+    vhCodeLines_list.append("                $display(\"CODEC{}-%d-PASS: %d -> %b -> %d\", cnt_i, datain_{}, tsv_{}, dataout_{});\n".format(
+            codeword_bitwidth, codeword_bitwidth, codeword_bitwidth, codeword_bitwidth))
+    vhCodeLines_list.append("            end\n")
+
+    vhCodeLines_list.append("            for (idx_i = 0; idx_i < {}; idx_i++) begin\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("                if ( (tsvTrans[idx_i] != 0) && (tsvTrans[idx_i+1] != 0) ) begin\n")
+    vhCodeLines_list.append("                    $display(\"---ERROR! CAC rule violated!---\");\n")
+    vhCodeLines_list.append("                    cnt_violate = cnt_violate + 1;\n")
+    vhCodeLines_list.append("                    $finish();\n")
+    vhCodeLines_list.append("                end\n")
+    vhCodeLines_list.append("                if ( (tsvTrans[{}] != 0) && (tsvTrans[0] != 0) ) begin\n".format(codeword_bitwidth - 1))
+    vhCodeLines_list.append("                    $display(\"---ERROR! CAC rule violated!---\");\n")
+    vhCodeLines_list.append("                    cnt_violate = cnt_violate + 1;\n")
+    vhCodeLines_list.append("                    $finish();\n")
+
+    vhCodeLines_list.append("                end\n")
+    vhCodeLines_list.append("            end\n")
+    vhCodeLines_list.append("\n")
+
+    vhCodeLines_list.append("        end: for_cnt_i\n")
+    vhCodeLines_list.append("\n")
+
+    vhCodeLines_list.append("        $display(\"Finished! %d errors, %d ok, %d violate!\", cnt_err, cnt_pass, cnt_violate);\n")
+    vhCodeLines_list.append("        $finish();\n")
+    vhCodeLines_list.append("    end\n")
+    vhCodeLines_list.append("\n")
+
+    vhCodeLines_list.append("endmodule\n")
+
+    if if_export_file is True:
+        with open(export_filePath, 'w') as f:
+            f.writelines(vhCodeLines_list)
+
+        f.close()
+
+    for codeLine_i in vhCodeLines_list:
+        print(codeLine_i)
