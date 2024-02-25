@@ -1,9 +1,11 @@
+# CATF-CAC & FNS-CATF-CAC
+
 import copy
 
 
 class Codec_Ring2CTransCAC:
     def __init__(self, len_cw: int):
-        assert isinstance(len_cw, int) and len_cw > 2
+        assert isinstance(len_cw, int) and len_cw > 3
         self._param_cwLength = len_cw
         self._param_nsTuple = copy.deepcopy(self.initialize_ns(n_element=len_cw))
         self._param_maxInputLimitation = self.get_max_input_value_limitation(n_bit=len_cw)
@@ -302,10 +304,12 @@ class Codec_Ring2CTransCAC_FNSBased(Codec_Ring2CTransCAC):
         :param n_bit:
         :return:
         '''
+        assert n_bit >= 3
         ncw_list = [2, 3, 4]
-        if n_bit > 3:
+        if n_bit >= 4:
             for nbit_ii in range(4, n_bit + 1):
                 ncw_list.append(ncw_list[-1] + ncw_list[-2])
+                assert ncw_list[-1] == (self.getParam_nsTuple()[nbit_ii-2] + self.getParam_nsTuple()[nbit_ii-4])
         self._param_codewordNumberTuple_byCodeLength = tuple(ncw_list)
         return (ncw_list[-1] - 1)
 

@@ -81,7 +81,7 @@ foreach FNSCATF_enc_i $FNSCATF_encoder_designs {
 
     append report_name .delay_rpt
 
-    report_timing -from [get_ports datain] > $report_name
+    report_timing -from [get_ports datain] -to [get_ports codeout[0]] > $report_name
 }
 
 
