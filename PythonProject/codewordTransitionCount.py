@@ -101,8 +101,8 @@ def runSimu_FNSCATF(cw_len, n_cycle):
 ###################################################################################
 # MAIN
 
-n_cycle = 100000
-cw_len = 16
+n_cycle = 1000000
+cw_len = 15
 simuResult_FNSFPF = runSimu_FNSFPF(cw_len = cw_len, n_cycle = n_cycle)
 simuResult_FNSCATF = runSimu_FNSCATF(cw_len = cw_len, n_cycle = n_cycle)
 

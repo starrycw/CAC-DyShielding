@@ -1,6 +1,6 @@
 import RingCAC_Alg.verilogCodeGen_ringCACCodec
 
-for codeword_len in range(5, 17):
+for codeword_len in range(11, 13):
     #
     RingCAC_Alg.verilogCodeGen_ringCACCodec.vGen_FNSCATF_EncoderCore(codeword_bitwidth=codeword_len, if_export_file=True)
     RingCAC_Alg.verilogCodeGen_ringCACCodec.vGen_FNSCATF_DecoderCore(codeword_bitwidth=codeword_len, if_export_file=True)
