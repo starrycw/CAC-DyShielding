@@ -568,3 +568,14 @@ class BSCAC_ForHexDyS2C_2CSupFor7bitGroup_ver20231224(BSCAC_ForHexDyS2C_2CSupFor
         idx_tuple_stuffingbit = tuple(idx_list_stuffingbit)
 
         return data_recovered_tuple, idx_tuple_stuffingbit
+
+
+class BSCAC_ForHexDyS2C_2CSupFor7bitGroup_Main(BSCAC_ForHexDyS2C_2CSupFor7bitGroup_ver20231224):
+    '''
+    The MAIN class of BSCAC_ForHexDyS2C_2CSupFor7bitGroup.
+
+    You can use this class in other python files, and link it to the class you want to use.
+
+    '''
+    def __init__(self, instance_id=None):
+        super().__init__(instance_id)
