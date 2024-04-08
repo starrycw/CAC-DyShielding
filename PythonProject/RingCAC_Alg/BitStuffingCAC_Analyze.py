@@ -294,7 +294,7 @@ class _Z3Solver_forMuACalc:
         for idx_i in range(0, 64):
             self._solver_main.add(
                 z3.Sum( [self._var_muB_numeratorList[idx_m] * self.get_matrixQ()[idx_m][idx_i] for idx_m in range(0, 64)] )
-                == (self._var_muC_numeratorList[idx_i] * 128) )
+                == (self._var_muC_numeratorList[idx_i] * 256) )
             self._solver_main.add( self._var_muC_denominatorList[idx_i] == self._var_muB_denominatorList[idx_i] )
 
     ####################################################################################################################
