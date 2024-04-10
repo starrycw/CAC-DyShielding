@@ -1,6 +1,6 @@
 import RingCAC_Alg.BitStuffingCAC_Analyze as BitStuffingCAC_Analyze
 
-###################################################################
+########################################################################################################################
 # Calculate the transition probability of single encoded group (7-bit codeword).
 if False:
     msbFirst = True
@@ -12,7 +12,7 @@ if False:
     transProbMatrix.showMatrix_main(config_vmin=-0.05, config_dpi=500)
     transProbMatrix.showMatrix_mainTimesN(n_int=(2**7), config_vmin=0, config_dpi=500)
 
-###################################################################
+########################################################################################################################
 # Calculate the transition cnt of single encoded group (7-bit codeword).
 if False:
     msbFirst = True
@@ -23,16 +23,16 @@ if False:
     print(check_ifpass,check_errlist)
     transCntMatrix.showMatrix_main(config_vmin=-0.05, config_dpi=500)
 
-####################################################################
+########################################################################################################################
 # Calc \mu_a
-if False:
-    msbFirst = True
-    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuA_main()
+# if False:
+#     msbFirst = True
+#     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+#     BSCACAnalyze_instance01.calcMuA_main()
 
-####################################################################
+########################################################################################################################
 # Calc Matrix Q & Matrix B
-if True:
+if False:
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     matrixB = BSCACAnalyze_instance01._calcMuA_subtask_getMatrixB()
@@ -62,4 +62,35 @@ if True:
         print("[row{}-{}] \t {}".format(idx_i, rowSum_matrixQ, matrixQ[idx_i]))
         assert rowSum_matrixQ == 256
 
+########################################################################################################################
+# Calc matrix BQ
+if False:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    matrixBQ = BSCACAnalyze_instance01._calcMuASimplified_subtask_getMatrixBQ()
+    colIdx_list = []
+    print("###############################################")
 
+    idx_cnt = 0
+    for matrixBQ_row_i in matrixBQ:
+        assert len(matrixBQ_row_i) == 64
+        sum_row_i = 0
+        for matrixBQ_i in matrixBQ_row_i:
+            sum_row_i = sum_row_i + matrixBQ_i
+        assert sum_row_i == 256
+        print("Row{}\t - Sum{} - {}".format(idx_cnt, sum_row_i, matrixBQ_row_i))
+        idx_cnt = idx_cnt + 1
+
+########################################################################################################################
+# Calc \mu_a - Simplified! Basic constraint!
+if True:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    BSCACAnalyze_instance01.calcMuASimplified_main(constraintSet='basic')
+
+########################################################################################################################
+# Calc \mu_a - Simplified! Full constraint!
+if False:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    BSCACAnalyze_instance01.calcMuASimplified_main(constraintSet='full')

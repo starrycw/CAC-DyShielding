@@ -10,6 +10,14 @@ import z3 as z3
 import RingCAC_Alg.BitStuffingCAC_Codec as BitStuffingCAC_Codec
 
 ########################################################################################################################
+
+
+########################################################################################################################
+### class _transitionProbabilityMatrix
+########################################################################################################################
+###
+###
+###
 ########################################################################################################################
 class _transitionProbabilityMatrix:
     '''
@@ -20,17 +28,21 @@ class _transitionProbabilityMatrix:
         self._param_matrixSize = copy.deepcopy(n_size)
         self._init_mainMatrix()
 
+    ####################################################################################################################
     def __repr__(self):
         matrixCheck_ifpass, matrixCheck_errList = self.checkMatrix()
-        matrixInfoStr = "-------\nTransition Probability Matrix\n---Size: {} x {} \n---Matrix Check Pass: {} \n---Errors: {}\n-------\n".format(self.getParam_matrixSize(),
-                                                                                                                                          self.getParam_matrixSize(),
-                                                                                                                                          matrixCheck_ifpass,
-                                                                                                                                          matrixCheck_errList)
+        matrixInfoStr = ("-------\nTransition Probability Matrix\n"
+                         "---Size: {} x {} \n---Matrix Check Pass: {} \n---Errors: {}\n-------\n").format(self.getParam_matrixSize(),
+                                                                                                          self.getParam_matrixSize(),
+                                                                                                          matrixCheck_ifpass,
+                                                                                                          matrixCheck_errList)
         return matrixInfoStr
 
+    ####################################################################################################################
     def getParam_matrixSize(self):
         return copy.deepcopy(self._param_matrixSize)
 
+    ####################################################################################################################
     def _init_mainMatrix(self):
         '''
         Initialize / Reset the trans prob matrix.
@@ -41,6 +53,7 @@ class _transitionProbabilityMatrix:
             col_list = self.getParam_matrixSize() * [0]
             self._matrix_main.append(copy.deepcopy(col_list))
 
+    ####################################################################################################################
     def reset_Matrix(self):
         '''
         Reset
@@ -48,6 +61,7 @@ class _transitionProbabilityMatrix:
         '''
         self._init_mainMatrix()
 
+    ####################################################################################################################
     def modifyMatrix_singleRow(self, row_index: int, newProbList: list[int, ...]):
         '''
         Replace the one row in the trans prob matrix with a new list.
@@ -63,19 +77,23 @@ class _transitionProbabilityMatrix:
         assert isinstance(newProbList, list) and len(newProbList) == self.getParam_matrixSize()
         self._matrix_main[row_index] = copy.deepcopy(newProbList)
 
+    ####################################################################################################################
     def getMatrix_all(self):
         return copy.deepcopy(self._matrix_main)
 
+    ####################################################################################################################
     def getMatrix_oneRow(self, row_idx: int) -> tuple:
         row_list = copy.deepcopy(self._matrix_main[row_idx])
         return tuple(row_list)
 
+    ####################################################################################################################
     def getMatrix_oneCol(self, col_idx: int) -> tuple:
         col_list = []
         for row_i in range(0, self.getParam_matrixSize()):
             col_list.append(copy.deepcopy(self._matrix_main[row_i][col_idx]))
         return tuple(col_list)
 
+    ####################################################################################################################
     def showMatrix_main(self, config_zeroValue = -1, config_vmin = -0.05, config_dpi = 500):
         '''
         Show the transProbability Matrix.
@@ -97,6 +115,7 @@ class _transitionProbabilityMatrix:
         sns.heatmap(data=npMatrix_a, vmin=config_vmin, annot=False, cmap=plt.get_cmap('Greens'))
         plt.show()
 
+    ####################################################################################################################
     def showMatrix_mainTimesN(self, n_int, config_vmin = 0, config_dpi = 500):
         '''
         Show the (transProbability x n) Matrix.
@@ -118,7 +137,7 @@ class _transitionProbabilityMatrix:
         sns.heatmap(data=npMatrix_a, vmin=config_vmin, annot=True, cmap=plt.get_cmap('Blues'), annot_kws={"size": 7})
         plt.show()
 
-
+    ####################################################################################################################
     def checkMatrix(self):
         '''
         Check the trans prob matrix.
@@ -158,18 +177,27 @@ class _transitionProbabilityMatrix:
 
 
 ########################################################################################################################
+### class _transitionCntMatrix <-- (_transitionProbabilityMatrix)
+########################################################################################################################
+###
+###
+###
 ########################################################################################################################
 class _transitionCntMatrix(_transitionProbabilityMatrix):
     def __init__(self, n_size):
         super().__init__(n_size=n_size)
 
+    ####################################################################################################################
     def __repr__(self):
         matrixCheck_ifpass, matrixCheck_errList = self.checkMatrix()
-        matrixInfoStr = "-------\nTransition Count Matrix\n---Size: {} x {} \n---Matrix Check Pass: {} \n---Errors: {}\n-------\n".format(self.getParam_matrixSize(),
-                                                                                                                                          self.getParam_matrixSize(),
-                                                                                                                                          matrixCheck_ifpass,
-                                                                                                                                          matrixCheck_errList)
+        matrixInfoStr = ("-------\nTransition Count Matrix\n"
+                         "---Size: {} x {} \n---Matrix Check Pass: {} \n---Errors: {}\n-------\n").format(self.getParam_matrixSize(),
+                                                                                                          self.getParam_matrixSize(),
+                                                                                                          matrixCheck_ifpass,
+                                                                                                          matrixCheck_errList)
         return matrixInfoStr
+
+    ####################################################################################################################
     def checkMatrix(self):
         '''
         Check the matrix.
@@ -204,6 +232,7 @@ class _transitionCntMatrix(_transitionProbabilityMatrix):
 
         return check_pass, copy.deepcopy(error_list)
 
+    ####################################################################################################################
     def showMatrix_main(self, config_zeroValue = -1, config_vmin = -0.05, config_dpi = 500):
         '''
         Show the transProbability Matrix.
@@ -223,9 +252,22 @@ class _transitionCntMatrix(_transitionProbabilityMatrix):
 
 
 ########################################################################################################################
+### class _Z3Solver_forMuACalc
+########################################################################################################################
+###
+### ABANDONED!!! DO NOT USE!!!
+###
 ########################################################################################################################
 class _Z3Solver_forMuACalc:
+    '''
+    Z3 Solver for matrix \mu_a calculation & code rate analyze.
+    '''
     def __init__(self, matrix_B, matrix_Q):
+        ###################################
+        # class '_Z3Solver_forMuACalc' has been abandoned!!!
+        assert False
+        ###################################
+
         # Matrix B & matrix Q
         # Matrix Q = Matrix P / 64
         assert len(matrix_B) == 64
@@ -409,15 +451,169 @@ class _Z3Solver_forMuACalc:
         return copy.deepcopy(self._solution_model)
 
 
+########################################################################################################################
+### class _Z3Solver_forMuACalc_Simplfied
+########################################################################################################################
+###
+###
+###
+########################################################################################################################
+class _Z3Solver_forMuACalc_Simplfied:
+    '''
+    Z3 Solver for matrix \mu_a calculation & code rate analyze.
+    A simplified version:
+    (1) Use 'Real' variables to represent the probability, rather than 'Int' / 'Int'.
+    (2) Use Matrix BQ to replace Matrix B & Matrix Q, according to the associative law of matrices: (AB)C = A(BC).
+    '''
+    def __init__(self, matrix_BQ):
+        # Matrix BQ = Matrix B times matrix Q
+        # Matrix Q = Matrix P * 256
+        assert len(matrix_BQ) == 64
+        for idx_ii in range(0, 64):
+            assert len(matrix_BQ[idx_ii]) == 64
+            for idx_jj in range(0, 64):
+                assert isinstance(matrix_BQ[idx_ii][idx_jj], int)
+        self._matrix_BQ = copy.deepcopy(matrix_BQ)
+
+        # Z3 solver
+        self._solver_main = z3.Solver()
+
+        # var \mu_a
+        # Each element in \mu_a is represented by a Real var.
+        self._var_muA_List = z3.RealVector('muA', 64)
+
+    ####################################################################################################################
+    def get_matrixBQ(self):
+        return copy.deepcopy(self._matrix_BQ)
+
+    ####################################################################################################################
+    def get_var_muAList(self):
+        return copy.deepcopy(self._var_muA_List)
+
+    ####################################################################################################################
+    def get_solverMain(self):
+        return copy.deepcopy(self._solver_main)
+
+    ####################################################################################################################
+    def getSolutionModel(self):
+        '''
+        The solution is a model for the set of asserted constraints. A model is an interpretation that makes each asserted constraint true.
+        :return:
+        '''
+        self._solution_model = self._solver_main.model()
+        return copy.deepcopy(self._solution_model)
 
 
+    ####################################################################################################################
+    def _addConstraint_muAmatrixBQmuA(self):
+        '''
+        Add Constraint:
+        \mu_a times matrix BQ = \mu_a
+        :return:
+        '''
+        for idx_i in range(0, 64):
+            self._solver_main.add(
+                z3.Sum( [(self._var_muA_List[idx_k] * self.get_matrixBQ()[idx_k][idx_i]) for idx_k in range(0, 64)] )
+                == (self._var_muA_List[idx_i] * 256)
+            )
 
+    ####################################################################################################################
+    def _addConstraint_muASUM(self):
+        '''
+        Add Constraint:
+        SUM(\mu_a) == 1
+        :return:
+        '''
+        self._solver_main.add(
+            z3.Sum(self._var_muA_List) == z3.RealVal(1)
+        )
 
+    ####################################################################################################################
+    def _addConstraint_muASymmetry(self):
+        '''
+        Add Constraint:
+        \mu_a[i] == \mu_a[63-i]
+        :return:
+        '''
+        for idx_i in range(0, 32):
+            self._solver_main.add(
+                self._var_muA_List[idx_i] == self._var_muA_List[63 - idx_i]
+            )
+
+    ####################################################################################################################
+    def _addConstraint_others(self):
+        '''
+
+        :return:
+        '''
+        for idx_iii in range(0, 63):
+            self._solver_main.add( self._var_muA_List[idx_iii] >= 0 )
+            self._solver_main.add( self._var_muA_List[idx_iii] <= 1 )
+
+    ####################################################################################################################
+    def addConstraint_basic(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muAmatrixBQmuA()
+        print("Z3Solver: Constraint added - \mu_a x BQ = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
+    ####################################################################################################################
+    def addConstraint_full(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muAmatrixBQmuA()
+        print("Z3Solver: Constraint added - \mu_a x BQ = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # \mu_a[i] = \mu_a[63-i]
+        self._addConstraint_muASymmetry()
+        print("Z3Solver: Constraint added - \mu_a[i] = \mu_a[63-i]")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
+    ####################################################################################################################
+    def checkSolver(self):
+        '''
+        Check if there is a solution.
+        :return:
+        '''
+        print("Check Solver...")
+        self._checkResult_ifsat = self._solver_main.check()
+        print("Check Solver - Done!")
+        print("Result: {}".format(self._checkResult_ifsat))
+
+    ####################################################################################################################
+    def get_ifsat(self):
+        '''
+        Get the result of the last 'check' - sat or not.
+        :return:
+        '''
+        return copy.deepcopy(self._checkResult_ifsat)
+
+    ####################################################################################################################
 
 
 
 
 ########################################################################################################################
+### class BitStuffingCAC_Analyze_HexArray
+########################################################################################################################
+###
+###
+###
 ########################################################################################################################
 class BitStuffingCAC_Analyze_HexArray:
     def __init__(self, config_msbFirst=True):
@@ -573,6 +769,10 @@ class BitStuffingCAC_Analyze_HexArray:
         return transCntMatrix_top
 
     ####################################################################################################################
+    ####################################################################################################################
+    # \mu_a calculation & coding rate analyze
+    #
+    ####################################################################################################################
     def _calcMuA_subtask_getMatrixB(self):
         '''
         Get the Matrix B.
@@ -667,33 +867,120 @@ class BitStuffingCAC_Analyze_HexArray:
         return transCntMatrix_top
 
     ####################################################################################################################
-    def calcMuA_main(self):
+    # The method 'calcMuA_main' has been abandoned! ####################################################################
+    # Use 'calcMuASimplified_main' to calculate \mu_a ! ################################################################
+    ####################################################################################################################
+    # def calcMuA_main(self):
+    #     '''
+    #     Calc \mu_a
+    #     :return:
+    #     '''
+    #
+    #     # Get Matrix B
+    #     param_matrixB = self._calcMuA_subtask_getMatrixB()
+    #
+    #     # Get Matrix Q
+    #     param_matrixQ_instance = self._calcMuA_subtask_getMatrixQ()
+    #     param_matrixQ = param_matrixQ_instance.getMatrix_all()
+    #
+    #     # Create Z3 solver
+    #     z3Solver_instance = _Z3Solver_forMuACalc(matrix_B=copy.deepcopy(param_matrixB),
+    #                                              matrix_Q=copy.deepcopy(param_matrixQ))
+    #
+    #     # Add Constraint
+    #     z3Solver_instance.addConstraint()
+    #
+    #     # Check Solver
+    #     z3Solver_instance.checkSolver()
+    #
+    #     # Get Model
+    #     solutionModel_instance = z3Solver_instance.getSolutionModel()
+    #     for modelVar_d in solutionModel_instance.decls():
+    #         print(modelVar_d.name(), solutionModel_instance[modelVar_d])
+
+    ####################################################################################################################
+    ####################################################################################################################
+    # \mu_a calculation & coding rate analyze - Version 20240410
+    #
+    ####################################################################################################################
+    def _calcMuASimplified_subtask_getMatrixBQ(self):
         '''
-        Calc \mu_a
+        Calc Matrix BQ.
+        :return:
+        '''
+        matrix_B = self._calcMuA_subtask_getMatrixB()
+        matrix_Q_instance = self._calcMuA_subtask_getMatrixQ()
+        matrix_Q = matrix_Q_instance.getMatrix_all()
+
+        matrix_BQ_list = []
+
+        for idx_row in range(0, 64):
+            currentRow_list = []
+            for idx_col in range(0, 64):
+                currentElement = 0
+                for idx_mulsum in range(0, 64):
+                    currentElement = currentElement + (matrix_B[idx_row][idx_mulsum] * matrix_Q[idx_mulsum][idx_col])
+                    assert ( (matrix_B[idx_row][idx_mulsum] == 0) or (matrix_Q[idx_mulsum][idx_col] == currentElement) )
+                currentRow_list.append(copy.deepcopy(currentElement))
+
+            currentRow_tuple = tuple(currentRow_list)
+            matrix_BQ_list.append(copy.deepcopy(currentRow_tuple))
+
+        matrix_BQ_tuple = tuple(matrix_BQ_list)
+
+        return matrix_BQ_tuple
+
+    def calcMuASimplified_main(self, constraintSet = 'full'):
+        '''
+        Calc \mu_a.
         :return:
         '''
 
-        # Get Matrix B
-        param_matrixB = self._calcMuA_subtask_getMatrixB()
+        assert constraintSet in ('full', 'basic')
 
-        # Get Matrix Q
-        param_matrixQ_instance = self._calcMuA_subtask_getMatrixQ()
-        param_matrixQ = param_matrixQ_instance.getMatrix_all()
+        # Get Matrix BQ
+        print("Calculating Matrix BQ...")
+        param_matrixBQ = self._calcMuASimplified_subtask_getMatrixBQ()
+        assert len(param_matrixBQ) == 64
+        if True:
+            print("Matrix BQ: ")
+            idx_cnt = 0
+            for matrixBQ_row_i in param_matrixBQ:
+                assert len(matrixBQ_row_i) == 64
+                sum_row_i = 0
+                for matrixBQ_i in matrixBQ_row_i:
+                    sum_row_i = sum_row_i + matrixBQ_i
+                assert sum_row_i == 256
+                print("Row{}\t - Sum{} - {}".format(idx_cnt, sum_row_i, matrixBQ_row_i))
+                idx_cnt = idx_cnt + 1
 
-        # Create Z3 solver
-        z3Solver_instance = _Z3Solver_forMuACalc(matrix_B=copy.deepcopy(param_matrixB),
-                                                 matrix_Q=copy.deepcopy(param_matrixQ))
+        print("#######################################################################################################")
+        print("#######################################################################################################")
+        print("Create Z3-Solver Instance...")
+        z3Solver_instance = _Z3Solver_forMuACalc_Simplfied(matrix_BQ=copy.deepcopy(param_matrixBQ))
+        print("Add Constraint ({})...".format(constraintSet))
+        if constraintSet == 'full':
+            z3Solver_instance.addConstraint_full()
+        elif constraintSet == 'basic':
+            z3Solver_instance.addConstraint_basic()
 
-        # Add Constraint
-        z3Solver_instance.addConstraint()
-
-        # Check Solver
         z3Solver_instance.checkSolver()
 
-        # Get Model
         solutionModel_instance = z3Solver_instance.getSolutionModel()
         for modelVar_d in solutionModel_instance.decls():
-            print(modelVar_d.name(), solutionModel_instance[modelVar_d])
+            print(modelVar_d.name(), '=\t', solutionModel_instance[modelVar_d])
+
+        # print("###### {}".format(solutionModel_instance.evaluate( z3.Sum([z3Solver_instance.get_var_muAList()[idx_sss] for idx_sss in range(0, 32)]) )))
+
+
+
+
+    def analyzeMuA_getCodeRate_oneClk6bit(self):
+        '''
+
+        :return:
+        '''
+        pass # TODO: To Be Continue...
 
 
 
