@@ -452,13 +452,13 @@ class _Z3Solver_forMuACalc:
 
 
 ########################################################################################################################
-### class _Z3Solver_forMuACalc_Simplfied
+### class _Z3Solver_forMuACalc_Simplfied_useMatrixBQ
 ########################################################################################################################
 ###
 ###
 ###
 ########################################################################################################################
-class _Z3Solver_forMuACalc_Simplfied:
+class _Z3Solver_forMuACalc_Simplfied_useMatrixBQ:
     '''
     Z3 Solver for matrix \mu_a calculation & code rate analyze.
     A simplified version:
@@ -604,6 +604,155 @@ class _Z3Solver_forMuACalc_Simplfied:
         return copy.deepcopy(self._checkResult_ifsat)
 
     ####################################################################################################################
+
+
+########################################################################################################################
+### class _Z3Solver_forMuACalc_Simplfied_useMatrixCQ <-- (_Z3Solver_forMuACalc_Simplfied_useMatrixBQ)
+########################################################################################################################
+###
+###
+###
+########################################################################################################################
+class _Z3Solver_forMuACalc_Simplfied_useMatrixCQ(_Z3Solver_forMuACalc_Simplfied_useMatrixBQ):
+    '''
+    Z3 Solver for matrix \mu_a calculation & code rate analyze.
+    A simplified version:
+    (1) Use 'Real' variables to represent the probability, rather than 'Int' / 'Int'.
+    (2) Use Matrix CQ to replace Matrix B & Matrix Q. Matrix C assumes three pairs of bits are independent of each other.
+    '''
+    def __init__(self, matrix_C_b16, matrix_C_b32, matrix_C_b54, matrix_Q):
+        assert len(matrix_C_b16) == 64
+        assert len(matrix_C_b32) == 64
+        assert len(matrix_C_b54) == 64
+        assert len(matrix_Q) == 64
+        for idx_ii in range(0, 64):
+            assert len(matrix_C_b16[idx_ii]) == 64
+            assert len(matrix_C_b32[idx_ii]) == 64
+            assert len(matrix_C_b54[idx_ii]) == 64
+            assert len(matrix_Q) == 64
+            for idx_kk in range(0, 64):
+                assert isinstance(matrix_Q[idx_ii][idx_kk], int)
+                assert matrix_Q[idx_ii][idx_kk] >= 0
+                assert matrix_C_b16[idx_ii][idx_kk] in (0, 1)
+                assert matrix_C_b32[idx_ii][idx_kk] in (0, 1)
+                assert matrix_C_b54[idx_ii][idx_kk] in (0, 1)
+
+        self._matrix_C_b16 = copy.deepcopy(matrix_C_b16)
+        self._matrix_C_b32 = copy.deepcopy(matrix_C_b32)
+        self._matrix_C_b54 = copy.deepcopy(matrix_C_b54)
+        self._matrix_Q = copy.deepcopy(matrix_Q)
+
+
+
+
+        # Z3 solver
+        self._solver_main = z3.Solver()
+
+        # var \mu_a
+        # Each element in \mu_a is represented by a Real var.
+        self._var_muA_List = z3.RealVector('muA', 64)
+
+        # var \mu_b
+        self._var_muB_List = z3.RealVector('muB', 64)
+
+    ####################################################################################################################
+    def get_MatrixC_b16(self):
+        return copy.deepcopy(self._matrix_C_b16)
+
+    ####################################################################################################################
+    def get_MatrixC_b32(self):
+        return copy.deepcopy(self._matrix_C_b32)
+
+    ####################################################################################################################
+    def get_MatrixC_b54(self):
+        return copy.deepcopy(self._matrix_C_b54)
+
+    ####################################################################################################################
+    def get_MatrixQ(self):
+        return copy.deepcopy(self._matrix_Q)
+
+    ####################################################################################################################
+    def get_matrixBQ(self):
+        assert False
+
+    ####################################################################################################################
+    def _addConstraint_muAmatrixBQmuA(self):
+        assert False
+
+    ####################################################################################################################
+    def _addConstraint_muA2muB(self):
+        '''
+        Add Constraint:
+        \mu_a --> \mu_b.
+        :return:
+        '''
+        for idx_i in range(0, 64):
+            self._solver_main.add(
+                ( (z3.Sum( [(self._var_muA_List[idx_ka] * self.get_MatrixC_b16()[idx_ka][idx_i]) for idx_ka in range(0, 64)] ))
+                * (z3.Sum( [(self._var_muA_List[idx_kb] * self.get_MatrixC_b32()[idx_kb][idx_i]) for idx_kb in range(0, 64)] ))
+                * (z3.Sum( [(self._var_muA_List[idx_kc] * self.get_MatrixC_b54()[idx_kc][idx_i]) for idx_kc in range(0, 64)] )) )
+                == self._var_muB_List[idx_i]
+            )
+
+    ####################################################################################################################
+    def _addConstraint_muBmatrixQmuA(self):
+        '''
+        Add Constraint:
+        \mu_b times matrix Q = \mu_a
+        :return:
+        '''
+        for idx_i in range(0, 64):
+            self._solver_main.add(
+                z3.Sum( [(self._var_muB_List[idx_k] * self.get_MatrixQ()[idx_k][idx_i]) for idx_k in range(0, 64)] )
+                == (self._var_muA_List[idx_i] * 256)
+            )
+
+    ####################################################################################################################
+    def addConstraint_basic(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muA2muB()
+        print("Z3Solver: Constraint added - \mu_a --> \mu_b")
+
+        # \mu_b times matrix Q = \mu_a
+        self._addConstraint_muBmatrixQmuA()
+        print("Z3Solver: Constraint added - \mu_b times matrix Q = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
+    ####################################################################################################################
+    def addConstraint_full(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muA2muB()
+        print("Z3Solver: Constraint added - \mu_a --> \mu_b")
+
+        # \mu_b times matrix Q = \mu_a
+        self._addConstraint_muBmatrixQmuA()
+        print("Z3Solver: Constraint added - \mu_b times matrix Q = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # \mu_a[i] = \mu_a[63-i]
+        self._addConstraint_muASymmetry()
+        print("Z3Solver: Constraint added - \mu_a[i] = \mu_a[63-i]")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
+
+
+
+
 
 
 
@@ -930,7 +1079,7 @@ class BitStuffingCAC_Analyze_HexArray:
 
         return matrix_BQ_tuple
 
-    def calcMuASimplified_main(self, constraintSet = 'full'):
+    def calcMuASimplified_useMatrixBQ_main(self, constraintSet = 'full'):
         '''
         Calc \mu_a.
         :return:
@@ -957,7 +1106,7 @@ class BitStuffingCAC_Analyze_HexArray:
         print("#######################################################################################################")
         print("#######################################################################################################")
         print("Create Z3-Solver Instance...")
-        z3Solver_instance = _Z3Solver_forMuACalc_Simplfied(matrix_BQ=copy.deepcopy(param_matrixBQ))
+        z3Solver_instance = _Z3Solver_forMuACalc_Simplfied_useMatrixBQ(matrix_BQ=copy.deepcopy(param_matrixBQ))
         print("Add Constraint ({})...".format(constraintSet))
         if constraintSet == 'full':
             z3Solver_instance.addConstraint_full()
@@ -972,7 +1121,188 @@ class BitStuffingCAC_Analyze_HexArray:
 
         # print("###### {}".format(solutionModel_instance.evaluate( z3.Sum([z3Solver_instance.get_var_muAList()[idx_sss] for idx_sss in range(0, 32)]) )))
 
+    ####################################################################################################################
+    def _calcMuA_subtask_getMatrixC(self):
+        '''
+        Get the Matrix C.
+        :return:
+        '''
+        # cMatrix_bits16 = []
+        # cMatrix_bits32 = []
+        # cMatrix_bits54 = []
+        #
+        # for idx_codeword in range(0, 64):
+        #     cList_bits16 = [0, 0, 0,
+        #                     0]  # [ (bits[0,5] == 00 ?), (bits[0,5] == 01 ?), (bits[0,5] == 10 ?), (bits[0,5] == 11 ?) ]
+        #     cList_bits32 = [0, 0, 0,
+        #                     0]  # [ (bits[2,1] == 00 ?), (bits[2,1] == 01 ?), (bits[2,1] == 10 ?), (bits[2,1] == 11 ?) ]
+        #     cList_bits54 = [0, 0, 0,
+        #                     0]  # [ (bits[4,3] == 00 ?), (bits[4,3] == 01 ?), (bits[4,3] == 10 ?), (bits[4,3] == 11 ?) ]
+        #
+        #     cw_binTuple = self.tool_convert_int2BinTuple(input_int=copy.deepcopy(idx_codeword), n_bit=6, msbFirst=self._getConfig_msbFirst())
+        #
+        #     if (cw_binTuple[0] == 0 and cw_binTuple[5] == 0):
+        #         cList_bits16[0] = 1
+        #     elif (cw_binTuple[0] == 0 and cw_binTuple[5] == 1):
+        #         cList_bits16[1] = 1
+        #     elif (cw_binTuple[0] == 1 and cw_binTuple[5] == 0):
+        #         cList_bits16[2] = 1
+        #     elif (cw_binTuple[0] == 1 and cw_binTuple[5] == 1):
+        #         cList_bits16[3] = 1
+        #     else:
+        #         assert False
+        #
+        #     if (cw_binTuple[2] == 0 and cw_binTuple[1] == 0):
+        #         cList_bits32[0] = 1
+        #     elif (cw_binTuple[2] == 0 and cw_binTuple[1] == 1):
+        #         cList_bits32[1] = 1
+        #     elif (cw_binTuple[2] == 1 and cw_binTuple[1] == 0):
+        #         cList_bits32[2] = 1
+        #     elif (cw_binTuple[2] == 1 and cw_binTuple[1] == 1):
+        #         cList_bits32[3] = 1
+        #     else:
+        #         assert False
+        #
+        #     if (cw_binTuple[4] == 0 and cw_binTuple[3] == 0):
+        #         cList_bits54[0] = 1
+        #     elif (cw_binTuple[4] == 0 and cw_binTuple[3] == 1):
+        #         cList_bits54[1] = 1
+        #     elif (cw_binTuple[4] == 1 and cw_binTuple[3] == 0):
+        #         cList_bits54[2] = 1
+        #     elif (cw_binTuple[4] == 1 and cw_binTuple[3] == 1):
+        #         cList_bits54[3] = 1
+        #     else:
+        #         assert False
+        #
+        #     cTuple_bits16 = tuple(cList_bits16)
+        #     cTuple_bits32 = tuple(cList_bits32)
+        #     cTuple_bits54 = tuple(cList_bits54)
+        #
+        #     cMatrix_bits16.append(copy.deepcopy(cTuple_bits16))
+        #     cMatrix_bits32.append(copy.deepcopy(cTuple_bits32))
+        #     cMatrix_bits54.append(copy.deepcopy(cTuple_bits54))
 
+
+        matrixC_A_tr = []
+        matrixC_B_tr = []
+        matrixC_C_tr = []
+
+
+        for idx_ii in range(0, 64):
+            matrixATr_rowList = []
+            matrixBTr_rowList = []
+            matrixCTr_rowList = []
+            idx_ii_binTuple = self.tool_convert_int2BinTuple(input_int=copy.deepcopy(idx_ii),
+                                                             n_bit=6,
+                                                             msbFirst=self._getConfig_msbFirst())
+
+            for idx_state_i in range(0, 64):
+                idx_state_i_binTuple = self.tool_convert_int2BinTuple(input_int=copy.deepcopy(idx_state_i),
+                                                                      n_bit=6,
+                                                                      msbFirst=self._getConfig_msbFirst())
+                if ((idx_ii_binTuple[0] == idx_state_i_binTuple[0]) and (idx_ii_binTuple[1] == idx_state_i_binTuple[5])):
+                    matrixATr_rowList.append(1)
+                else:
+                    matrixATr_rowList.append(0)
+
+                if ((idx_ii_binTuple[2] == idx_state_i_binTuple[2]) and (idx_ii_binTuple[3] == idx_state_i_binTuple[1])):
+                    matrixBTr_rowList.append(1)
+                else:
+                    matrixBTr_rowList.append(0)
+
+                if ((idx_ii_binTuple[4] == idx_state_i_binTuple[4]) and (idx_ii_binTuple[5] == idx_state_i_binTuple[3])):
+                    matrixCTr_rowList.append(1)
+                else:
+                    matrixCTr_rowList.append(0)
+
+            matrixC_A_tr.append(copy.deepcopy(matrixATr_rowList))
+            matrixC_B_tr.append(copy.deepcopy(matrixBTr_rowList))
+            matrixC_C_tr.append(copy.deepcopy(matrixCTr_rowList))
+
+        matrixC_A = []
+        matrixC_B = []
+        matrixC_C = []
+        for idx_row_i in range(0, 64):
+            matrixCA_rowList = []
+            matrixCB_rowList = []
+            matrixCC_rowList = []
+            for idx_col_i in range(0, 64):
+                matrixCA_rowList.append(copy.deepcopy(matrixC_A_tr[idx_col_i][idx_row_i]))
+                matrixCB_rowList.append(copy.deepcopy(matrixC_B_tr[idx_col_i][idx_row_i]))
+                matrixCC_rowList.append(copy.deepcopy(matrixC_C_tr[idx_col_i][idx_row_i]))
+
+            matrixCA_rowTuple = tuple(matrixCA_rowList)
+            matrixCB_rowTuple = tuple(matrixCB_rowList)
+            matrixCC_rowTuple = tuple(matrixCC_rowList)
+
+            matrixC_A.append(copy.deepcopy(matrixCA_rowTuple))
+            matrixC_B.append(copy.deepcopy(matrixCB_rowTuple))
+            matrixC_C.append(copy.deepcopy(matrixCC_rowTuple))
+
+        matrixC_A_tuple = tuple(matrixC_A)
+        matrixC_B_tuple = tuple(matrixC_B)
+        matrixC_C_tuple = tuple(matrixC_C)
+
+        return matrixC_A_tuple, matrixC_B_tuple, matrixC_C_tuple
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def calcMuASimplified_useMatrixCQ_main(self, constraintSet = 'full'):
+        '''
+        Calc \mu_a.
+        :return:
+        '''
+
+        assert constraintSet in ('full', 'basic')
+
+        # Get Matrix C
+        print("Calculating Matrix C...")
+        param_matrixC_A, param_matrixC_B, param_matrixC_C = self._calcMuA_subtask_getMatrixC()
+        assert len(param_matrixC_A) == 64
+        assert len(param_matrixC_B) == 64
+        assert len(param_matrixC_C) == 64
+        print("Matrix C-A, Matrix C-B &  Matrix C-C: ")
+        for idx_i in range(0, 64):
+            print("Row{}\t{}\t{}\t{}".format(idx_i, param_matrixC_A[idx_i], param_matrixC_B[idx_i], param_matrixC_C[idx_i]))
+
+        # Get Matrix Q
+        print("Calculating Matrix Q...")
+        param_matrixQ_instance = self._calcMuA_subtask_getMatrixQ()
+        param_matrixQ = param_matrixQ_instance.getMatrix_all()
+        assert len(param_matrixQ) == 64
+        print("Matrix Q: ")
+        for idx_i in range(0, 64):
+            print("Row{}\t{}".format(idx_i, param_matrixQ[idx_i]))
+
+
+        print("#######################################################################################################")
+        print("#######################################################################################################")
+        print("Create Z3-Solver Instance...")
+        z3Solver_instance = _Z3Solver_forMuACalc_Simplfied_useMatrixCQ(matrix_C_b16=copy.deepcopy(param_matrixC_A),
+                                                                       matrix_C_b32=copy.deepcopy(param_matrixC_B),
+                                                                       matrix_C_b54=copy.deepcopy(param_matrixC_C),
+                                                                       matrix_Q=copy.deepcopy(param_matrixQ))
+        print("Add Constraint ({})...".format(constraintSet))
+        if constraintSet == 'full':
+            z3Solver_instance.addConstraint_full()
+        elif constraintSet == 'basic':
+            z3Solver_instance.addConstraint_basic()
+
+        z3Solver_instance.checkSolver()
+
+        solutionModel_instance = z3Solver_instance.getSolutionModel()
+        for modelVar_d in solutionModel_instance.decls():
+            print(modelVar_d.name(), '=\t', solutionModel_instance[modelVar_d])
 
 
     def analyzeMuA_getCodeRate_oneClk6bit(self):

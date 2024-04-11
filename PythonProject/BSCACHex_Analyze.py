@@ -82,15 +82,78 @@ if False:
         idx_cnt = idx_cnt + 1
 
 ########################################################################################################################
-# Calc \mu_a - Simplified! Basic constraint!
-if True:
-    msbFirst = True
-    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_main(constraintSet='basic')
-
-########################################################################################################################
-# Calc \mu_a - Simplified! Full constraint!
+# Calc \mu_a by BQ - Simplified! Basic constraint!
 if False:
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_main(constraintSet='full')
+    BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='basic')
+
+########################################################################################################################
+# Calc \mu_a by BQ - Simplified! Full constraint!
+if False:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='full')
+
+########################################################################################################################
+# Calc matrix C
+if False:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    matrixR_a, matrixR_b, matrixR_c = BSCACAnalyze_instance01._calcMuA_subtask_getMatrixC()
+    colIdx_list = []
+    print("###############################################")
+
+    assert len(matrixR_a) == 64
+    assert len(matrixR_b) == 64
+    assert len(matrixR_c) == 64
+
+    for idx_row_i in range(0, 64):
+        sum_row_i_a = 0
+        sum_row_i_b = 0
+        sum_row_i_c = 0
+        for matrixR_i in matrixR_a[idx_row_i]:
+            sum_row_i_a = sum_row_i_a + matrixR_i
+        for matrixR_i in matrixR_b[idx_row_i]:
+            sum_row_i_b = sum_row_i_b + matrixR_i
+        for matrixR_i in matrixR_c[idx_row_i]:
+            sum_row_i_c = sum_row_i_c + matrixR_i
+        assert sum_row_i_a == 16
+        assert sum_row_i_b == 16
+        assert sum_row_i_c == 16
+        print("Row{}\t - Sum{}-{}-{} - {}-{}-{}".format(idx_row_i, sum_row_i_a, sum_row_i_b, sum_row_i_c, matrixR_a[idx_row_i], matrixR_b[idx_row_i], matrixR_c[idx_row_i]))
+
+    colSumList_a = []
+    colSumList_b = []
+    colSumList_c = []
+    for idx_col_k in range(0, 64):
+        sum_col_k_a = 0
+        sum_col_k_b = 0
+        sum_col_k_c = 0
+        for idx_row_k in range(0, 64):
+            sum_col_k_a = sum_col_k_a + matrixR_a[idx_row_k][idx_col_k]
+            sum_col_k_b = sum_col_k_b + matrixR_b[idx_row_k][idx_col_k]
+            sum_col_k_c = sum_col_k_c + matrixR_c[idx_row_k][idx_col_k]
+        assert sum_col_k_a == 16
+        assert sum_col_k_b == 16
+        assert sum_col_k_c == 16
+        colSumList_a.append(sum_col_k_a)
+        colSumList_b.append(sum_col_k_b)
+        colSumList_c.append(sum_col_k_c)
+    print("ColSum\tA\t{}".format(colSumList_a))
+    print("ColSum\tB\t{}".format(colSumList_b))
+    print("ColSum\tC\t{}".format(colSumList_c))
+
+########################################################################################################################
+# Calc \mu_a by CQ - Simplified! Basic constraint!
+if False:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='basic')
+
+########################################################################################################################
+# Calc \mu_a by CQ - Simplified! Full constraint!
+if True:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='full')
