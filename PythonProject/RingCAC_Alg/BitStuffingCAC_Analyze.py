@@ -1,13 +1,14 @@
 import copy
 import time
 import fractions
+import random
 
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import z3 as z3
 
-import RingCAC_Alg.BitStuffingCAC_Codec as BitStuffingCAC_Codec
+import PythonProject.RingCAC_Alg.BitStuffingCAC_Codec as BitStuffingCAC_Codec
 
 ########################################################################################################################
 
@@ -1311,6 +1312,444 @@ class BitStuffingCAC_Analyze_HexArray:
         :return:
         '''
         pass # TODO: To Be Continue...
+
+
+########################################################################################################################
+### class BitStuffingCAC_Simulation_HexArray
+########################################################################################################################
+###
+###
+###
+########################################################################################################################
+class BitStuffingCAC_Simulation_HexArray:
+    def __init__(self, arrayType):
+        self._flag_arrayLocked = False
+        self._initialize_codec()
+
+        if arrayType == "Hex_RegularA_11x8":
+            self._createHexArray_regularA_11x8()
+        else:
+            assert False
+
+        self._check_dyShieldingTopo()
+
+        self.resetCurrentState()
+
+    ####################################################################################################################
+    def resetCurrentState(self):
+        self._stateList_signalBits_current = copy.deepcopy(self._stateList_signalBits_init)
+        self._stateList_dyShieldingType1_current = copy.deepcopy(self._stateList_dyShieldingType1_init)
+        self._stateList_dyShieldingType2_current = copy.deepcopy(self._stateList_dyShieldingType2_init)
+        self._stateList_dyShieldingType3_current = copy.deepcopy(self._stateList_dyShieldingType3_init)
+
+
+
+
+    ####################################################################################################################
+    def _initialize_codec(self):
+        timestamp_int = int(time.time())
+        self._codecInstance_BSCAC_7bit = BitStuffingCAC_Codec.BSCAC_ForHexDyS2C_2CSupFor7bitGroup_Main(instance_id=copy.deepcopy(timestamp_int))
+
+    ####################################################################################################################
+    def get_dyShieldingType1_topoTuple(self):
+        return copy.deepcopy(self._topoTuple_dyShieldingType1)
+
+    ####################################################################################################################
+    def get_dyShieldingType2_topoTuple(self):
+        return copy.deepcopy(self._topoTuple_dyShieldingType2)
+
+    ####################################################################################################################
+    def get_dyShieldingType3_topoTuple(self):
+        return copy.deepcopy(self._topoTuple_dyShieldingType3)
+
+    ####################################################################################################################
+    def get_dyShieldingType1_unconstraintBitsTuple(self):
+        return copy.deepcopy(self._unconstraintBitsTuple_dyShieldingType1)
+
+    ####################################################################################################################
+    def get_dyShieldingType2_unconstraintBitsTuple(self):
+        return copy.deepcopy(self._unconstraintBitsTuple_dyShieldingType2)
+
+    ####################################################################################################################
+    def get_dyShieldingType3_unconstraintBitsTuple(self):
+        return copy.deepcopy(self._unconstraintBitsTuple_dyShieldingType3)
+
+    ####################################################################################################################
+    def get_dyShieldingType1_initState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType1_init)
+
+    ####################################################################################################################
+    def get_dyShieldingType2_initState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType2_init)
+
+    ####################################################################################################################
+    def get_dyShieldingType3_initState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType3_init)
+
+    ####################################################################################################################
+    def get_dyShieldingType1_currentState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType1_current)
+
+    ####################################################################################################################
+    def get_dyShieldingType2_currentState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType2_current)
+
+    ####################################################################################################################
+    def get_dyShieldingType3_currentState(self):
+        return copy.deepcopy(self._stateList_dyShieldingType3_current)
+
+    ####################################################################################################################
+    def updateState_dyShieldingType1(self, newState_list):
+        '''
+        Update the state of the dyShieldingType1.
+        The element \in {0, 1, None},
+        in which 'None' represents 'No Change'.
+        :param newState_list:
+        :return:
+        '''
+        assert isinstance(newState_list, list)
+        oldState_list = self.get_dyShieldingType1_currentState()
+        newState_list_copy = copy.deepcopy(newState_list)
+        assert len(newState_list_copy) == len(oldState_list)
+
+        for idx_state_i in range(0, len(oldState_list)):
+            if newState_list_copy[idx_state_i] is None:
+                newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
+            else:
+                assert idx_state_i in (0, 1)
+
+        self._stateList_dyShieldingType1_current = copy.deepcopy(newState_list_copy)
+
+
+    ####################################################################################################################
+    def updateState_dyShieldingType2(self, newState_list):
+        '''
+        Update the state of the dyShieldingType2.
+        The element \in {0, 1, None},
+        in which 'None' represents 'No Change'.
+        :param newState_list:
+        :return:
+        '''
+        assert isinstance(newState_list, list)
+        oldState_list = self.get_dyShieldingType2_currentState()
+        newState_list_copy = copy.deepcopy(newState_list)
+        assert len(newState_list_copy) == len(oldState_list)
+
+        for idx_state_i in range(0, len(oldState_list)):
+            if newState_list_copy[idx_state_i] is None:
+                newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
+            else:
+                assert idx_state_i in (0, 1)
+
+        self._stateList_dyShieldingType2_current = copy.deepcopy(newState_list_copy)
+
+    ####################################################################################################################
+    def updateState_dyShieldingType3(self, newState_list):
+        '''
+        Update the state of the dyShieldingType3.
+        The element \in {0, 1, None},
+        in which 'None' represents 'No Change'.
+        :param newState_list:
+        :return:
+        '''
+        assert isinstance(newState_list, list)
+        oldState_list = self.get_dyShieldingType3_currentState()
+        newState_list_copy = copy.deepcopy(newState_list)
+        assert len(newState_list_copy) == len(oldState_list)
+
+        for idx_state_i in range(0, len(oldState_list)):
+            if newState_list_copy[idx_state_i] is None:
+                newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
+            else:
+                assert idx_state_i in (0, 1)
+
+        self._stateList_dyShieldingType3_current = copy.deepcopy(newState_list_copy)
+
+
+    ####################################################################################################################
+    def get_signalBits_initState(self):
+        return copy.deepcopy(self._stateList_signalBits_init)
+
+    ####################################################################################################################
+    def get_signalBits_currentState(self):
+        return copy.deepcopy(self._stateList_signalBits_current)
+
+    ####################################################################################################################
+    def updateState_signalBits(self, newState_list):
+        '''
+        Update the state of the signal bits.
+        The element \in {0, 1, None},
+        in which 'None' represents 'No Change'.
+        :param newState_list:
+        :return:
+        '''
+        assert isinstance(newState_list, list)
+        oldState_list = self.get_signalBits_currentState()
+        newState_list_copy = copy.deepcopy(newState_list)
+        assert len(newState_list_copy) == len(oldState_list)
+
+        for idx_state_i in range(0, len(oldState_list)):
+            if newState_list_copy[idx_state_i] is None:
+                newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
+            else:
+                assert idx_state_i in (0, 1)
+
+        self._stateList_signalBits_current = copy.deepcopy(newState_list_copy)
+
+    ####################################################################################################################
+    def get_state_virtualBit(self):
+        return copy.deepcopy(self._state_virtualBit)
+
+    ####################################################################################################################
+    def _check_dyShieldingTopo(self):
+        '''
+        Make sure the state lists and topo tuples are defined completely and correctly.
+
+        :return:
+        '''
+        signal_currentState = self.get_signalBits_initState()
+
+        for typeX in (1, 2, 3):
+            # Type 1
+            if typeX == 1:
+                dyshTypeX_currentStates = self.get_dyShieldingType1_initState()
+                dyshTypeX_topoTuple = self.get_dyShieldingType1_topoTuple()
+                dyshTypeX_unconstraintBits = self.get_dyShieldingType1_unconstraintBitsTuple()
+
+            # Type 2
+            elif typeX == 2:
+                dyshTypeX_currentStates = self.get_dyShieldingType2_initState()
+                dyshTypeX_topoTuple = self.get_dyShieldingType2_topoTuple()
+                dyshTypeX_unconstraintBits = self.get_dyShieldingType2_unconstraintBitsTuple()
+
+            # Type 3
+            elif typeX == 3:
+                dyshTypeX_currentStates = self.get_dyShieldingType3_initState()
+                dyshTypeX_topoTuple = self.get_dyShieldingType3_topoTuple()
+                dyshTypeX_unconstraintBits = self.get_dyShieldingType3_unconstraintBitsTuple()
+
+            else:
+                assert False
+
+            assert len(dyshTypeX_currentStates) == len(dyshTypeX_topoTuple)
+
+            boolList_traverseSignalBits = len(signal_currentState) * [False]
+
+            for topoTuple_i in dyshTypeX_topoTuple:
+                assert len(topoTuple_i) == 6
+                for bitIdx_iii in topoTuple_i:
+                    if isinstance(bitIdx_iii, int):
+                        assert bitIdx_iii >= 0
+                        assert bitIdx_iii < len(signal_currentState)
+                        assert boolList_traverseSignalBits[bitIdx_iii] is False
+                        boolList_traverseSignalBits[bitIdx_iii] = True
+                    else:
+                        assert bitIdx_iii is None
+            for bitIdx_iii in dyshTypeX_unconstraintBits:
+                assert bitIdx_iii >= 0
+                assert bitIdx_iii < len(signal_currentState)
+                assert boolList_traverseSignalBits[bitIdx_iii] is False
+                boolList_traverseSignalBits[bitIdx_iii] = True
+
+            for bool_i in boolList_traverseSignalBits:
+                assert bool_i is True
+
+    ####################################################################################################################
+    ####################################################################################################################
+    # Array
+    ####################################################################################################################
+    def _createHexArray_regularA_11x8(self):
+        '''
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_11x8.png "
+
+        :param n_shieldingRow:
+        :param n_shieldingCol:
+        :return:
+        '''
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = 32 * [0]
+
+        # self._stateList_signalBits_current = 32 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = 6 * [0]
+        self._stateList_dyShieldingType2_init = 6 * [0]
+        self._stateList_dyShieldingType3_init = 6 * [0]
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoTuple_dyShieldingType1 = ((4, 1, 0, None, 8, 9),
+                                            (6, 3, 2, 5, 10, 11),
+                                            (18, 13, 12, 17, 20, 21),
+                                            (None, 15, 14, 19, 22, 23),
+                                            (28, 25, 24, None, 32, 33),
+                                            (30, 27, 26, 29, 34, 35))
+        self._unconstraintBitsTuple_dyShieldingType1 = (7, 16, 31)
+
+        self._topoTuple_dyShieldingType2 = ((4, 5, 2, None, None, 1),
+                                            (6, 7, None, None, None, 3),
+                                            (16, 17, 12, 9, 8, None),
+                                            (18, 19, 14, 11, 10, 13),
+                                            (28, 29, 26, 21, 20, 25),
+                                            (30, 31, None, 23, 22, 27))
+        self._unconstraintBitsTuple_dyShieldingType2 = (0, 15, 24, 32, 33, 34, 35)
+
+        self._topoTuple_dyShieldingType3 = ((4, 9, 12, 13, 10, 5),
+                                            (6, 11, 14, 15, None, 7),
+                                            (16, None, 24, 25, 20, 17),
+                                            (18, 21, 26, 27, 22, 19),
+                                            (28, 33, None, None, 34, 29),
+                                            (30, 35, None, None, None, 31))
+        self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 8, 23, 32)
+
+    ################################################################################################################
+    ################################################################################################################
+    # Data Generation Method
+    ################################################################################################################
+    def _dataGen_random(self, bitWidth):
+        '''
+        Return a tuple containing random binary bits.
+        :param bitWidth:
+        :return:
+        '''
+        assert isinstance(bitWidth, int)
+        assert bitWidth > 0
+
+        maxDecValue = (2 ** bitWidth) - 1
+        randomDecInt = random.randint(0, maxDecValue)
+
+        randomBit_tuple = BitStuffingCAC_Analyze_HexArray.tool_convert_int2BinTuple(input_int=randomDecInt,
+                                                                                    n_bit=bitWidth,
+                                                                                    msbFirst=True)
+
+        return copy.deepcopy(randomBit_tuple)
+
+    ################################################################################################################
+    ################################################################################################################
+    # Simulation
+    ################################################################################################################
+    def runSimu_threeClk(self, dataGenMethod):
+        '''
+
+        :param dataGenMethod:
+        :return:
+        '''
+        # Generate data
+        if dataGenMethod == 'random':
+            dataGen_signalBitsTuple_01 = self._dataGen_random(bitWidth=len(self.get_signalBits_currentState()))
+            dataGen_signalBitsTuple_02 = self._dataGen_random(bitWidth=len(self.get_signalBits_currentState()))
+            dataGen_signalBitsTuple_03 = self._dataGen_random(bitWidth=len(self.get_signalBits_currentState()))
+
+            dataGen_dyshBitsTuple_S1 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType1_currentState()))
+            dataGen_dyshBitsTuple_S2 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType2_currentState()))
+            dataGen_dyshBitsTuple_S3 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType3_currentState()))
+
+        else:
+            assert False
+
+        # Assemble the signal bits into the following form:
+        # dataGen_data2bTrans_signalBits_3Clk = [[bit0_clk1, bit0_clk2, bit0_clk3], [bit1_clk1, bit1_clk2, bit1_clk3], ...]
+        dataGen_data2bTrans_signalBits_3Clk = []
+        for idx_i in range(0, len(self.get_signalBits_currentState())):
+            threeBitsList = [copy.deepcopy(dataGen_signalBitsTuple_01[idx_i]),
+                             copy.deepcopy(dataGen_signalBitsTuple_02[idx_i]),
+                             copy.deepcopy(dataGen_signalBitsTuple_03[idx_i])]
+            dataGen_data2bTrans_signalBits_3Clk.append(copy.deepcopy(threeBitsList))
+
+        # Clk 1: DySh Type 1
+
+        # Clk 1 - monitor
+        #
+        # flagList_signalBits_inputTransmitted:
+        # Once the signal bit with idx = idx_i is traversed,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to False.
+        # Once the input bit in signal bit with idx = idx_i is transmitted,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to True.
+        flagList_signalBits_inputTransmitted = len(self.get_signalBits_currentState()) * [None]
+
+        # Clk 1 - traverse all circle
+        for idx_centerDysh_i in range(0, len(self.get_dyShieldingType1_currentState())): # For each encoding circle
+            #######
+            # Get the current state: circleCodewordList_current
+            dyShieldingType1_currentState = self.get_dyShieldingType1_currentState()
+            circleCodewordList_current = []
+            if dyShieldingType1_currentState[idx_centerDysh_i] is None:
+                circleCodewordList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dyShieldingType1_currentState[idx_centerDysh_i] == 0:
+                circleCodewordList_current.append(0)
+            elif dyShieldingType1_currentState[idx_centerDysh_i] == 1:
+                circleCodewordList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_i in self.get_dyShieldingType1_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_i is None:
+                    circleCodewordList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_i, int)
+                    assert idx_neighboringSignalBits_i >= 0
+                    if self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 0:
+                        circleCodewordList_current.append(0)
+                    elif self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 1:
+                        circleCodewordList_current.append(1)
+                    else:
+                        assert False
+            assert len(circleCodewordList_current) == 7
+
+            #######
+            # Get the input data to be transmitted: circuitInputList_current
+            circleInputList_current = []
+            if dataGen_dyshBitsTuple_S1[idx_centerDysh_i] is None:
+                circleInputList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dataGen_dyshBitsTuple_S1[idx_centerDysh_i] == 0:
+                circleInputList_current.append(0)
+            elif dataGen_dyshBitsTuple_S1[idx_centerDysh_i] == 1:
+                circleInputList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_k in self.get_dyShieldingType1_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_k is None:
+                    circleInputList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_k, int)
+                    assert idx_neighboringSignalBits_k >= 0
+                    if dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 0:
+                        circleInputList_current.append(0)
+                    elif dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 1:
+                        circleInputList_current.append(1)
+                    else:
+                        assert False
+                    assert flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] is None
+                    flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] = False
+            assert len(circleInputList_current) == 7
+
+            #######
+            # Encoding
+
+
+
+
+
+
+
 
 
 
