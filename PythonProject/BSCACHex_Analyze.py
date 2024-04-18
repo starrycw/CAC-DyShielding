@@ -153,7 +153,7 @@ if False:
 
 ########################################################################################################################
 # Calc \mu_a by CQ - Simplified! Full constraint!
-if True:
+if False:
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='full')

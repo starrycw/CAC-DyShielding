@@ -1404,6 +1404,7 @@ class BitStuffingCAC_Simulation_HexArray:
         Update the state of the dyShieldingType1.
         The element \in {0, 1, None},
         in which 'None' represents 'No Change'.
+        The state of virtual bit CANNOT be modified!
         :param newState_list:
         :return:
         '''
@@ -1416,7 +1417,8 @@ class BitStuffingCAC_Simulation_HexArray:
             if newState_list_copy[idx_state_i] is None:
                 newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
             else:
-                assert idx_state_i in (0, 1)
+                assert newState_list_copy[idx_state_i] in (0, 1)
+                assert oldState_list[idx_state_i] in (0, 1)
 
         self._stateList_dyShieldingType1_current = copy.deepcopy(newState_list_copy)
 
@@ -1427,6 +1429,7 @@ class BitStuffingCAC_Simulation_HexArray:
         Update the state of the dyShieldingType2.
         The element \in {0, 1, None},
         in which 'None' represents 'No Change'.
+        The state of virtual bit CANNOT be modified!
         :param newState_list:
         :return:
         '''
@@ -1439,7 +1442,8 @@ class BitStuffingCAC_Simulation_HexArray:
             if newState_list_copy[idx_state_i] is None:
                 newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
             else:
-                assert idx_state_i in (0, 1)
+                assert newState_list_copy[idx_state_i] in (0, 1)
+                assert oldState_list[idx_state_i] in (0, 1)
 
         self._stateList_dyShieldingType2_current = copy.deepcopy(newState_list_copy)
 
@@ -1449,6 +1453,7 @@ class BitStuffingCAC_Simulation_HexArray:
         Update the state of the dyShieldingType3.
         The element \in {0, 1, None},
         in which 'None' represents 'No Change'.
+        The state of virtual bit CANNOT be modified!
         :param newState_list:
         :return:
         '''
@@ -1461,10 +1466,10 @@ class BitStuffingCAC_Simulation_HexArray:
             if newState_list_copy[idx_state_i] is None:
                 newState_list_copy[idx_state_i] = copy.deepcopy(oldState_list[idx_state_i])
             else:
-                assert idx_state_i in (0, 1)
+                assert newState_list_copy[idx_state_i] in (0, 1)
+                assert oldState_list[idx_state_i] in (0, 1)
 
         self._stateList_dyShieldingType3_current = copy.deepcopy(newState_list_copy)
-
 
     ####################################################################################################################
     def get_signalBits_initState(self):
@@ -1495,6 +1500,25 @@ class BitStuffingCAC_Simulation_HexArray:
                 assert idx_state_i in (0, 1)
 
         self._stateList_signalBits_current = copy.deepcopy(newState_list_copy)
+
+    ####################################################################################################################
+    def updateState_signalBits_modifySingleBit(self, bitIdx, bitNewState):
+        '''
+        Update the state of ONE signal bit.
+        The element \in {0, 1, None},
+        in which 'None' represents 'No Change'.
+        :param bitIdx:
+        :param bitNewState:
+        :return:
+        '''
+        assert isinstance(bitIdx, int)
+        assert bitIdx >= 0
+        assert self.get_signalBits_currentState()[bitIdx] in (0, 1)
+        if bitNewState in (0, 1):
+            self._stateList_signalBits_current[bitIdx] = copy.deepcopy(bitNewState)
+        else:
+            assert bitNewState is None
+
 
     ####################################################################################################################
     def get_state_virtualBit(self):
@@ -1657,9 +1681,9 @@ class BitStuffingCAC_Simulation_HexArray:
             dataGen_signalBitsTuple_02 = self._dataGen_random(bitWidth=len(self.get_signalBits_currentState()))
             dataGen_signalBitsTuple_03 = self._dataGen_random(bitWidth=len(self.get_signalBits_currentState()))
 
-            dataGen_dyshBitsTuple_S1 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType1_currentState()))
-            dataGen_dyshBitsTuple_S2 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType2_currentState()))
-            dataGen_dyshBitsTuple_S3 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType3_currentState()))
+            dataGen_dyshBitsTuple_S1 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType1_currentState())) # No virtual dysh
+            dataGen_dyshBitsTuple_S2 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType2_currentState())) # No virtual dysh
+            dataGen_dyshBitsTuple_S3 = self._dataGen_random(bitWidth=len(self.get_dyShieldingType3_currentState())) # No virtual dysh
 
         else:
             assert False
@@ -1672,6 +1696,12 @@ class BitStuffingCAC_Simulation_HexArray:
                              copy.deepcopy(dataGen_signalBitsTuple_02[idx_i]),
                              copy.deepcopy(dataGen_signalBitsTuple_03[idx_i])]
             dataGen_data2bTrans_signalBits_3Clk.append(copy.deepcopy(threeBitsList))
+
+        print("---Input data (signal bits) - {}: {}".format(dataGenMethod, dataGen_data2bTrans_signalBits_3Clk))
+
+        # Monitor
+        monitor_flagsBool_ifSignalBitTrans_3Clk = []
+        monitor_nTransmitted_signalBits = 0
 
         # Clk 1: DySh Type 1
 
@@ -1687,7 +1717,7 @@ class BitStuffingCAC_Simulation_HexArray:
         # Clk 1 - traverse all circle
         for idx_centerDysh_i in range(0, len(self.get_dyShieldingType1_currentState())): # For each encoding circle
             #######
-            # Get the current state: circleCodewordList_current
+            # Get the current state: circleCodewordTuple_current
             dyShieldingType1_currentState = self.get_dyShieldingType1_currentState()
             circleCodewordList_current = []
             if dyShieldingType1_currentState[idx_centerDysh_i] is None:
@@ -1712,6 +1742,7 @@ class BitStuffingCAC_Simulation_HexArray:
                     else:
                         assert False
             assert len(circleCodewordList_current) == 7
+            circleCodewordTuple_current = tuple(circleCodewordList_current)
 
             #######
             # Get the input data to be transmitted: circuitInputList_current
@@ -1742,7 +1773,245 @@ class BitStuffingCAC_Simulation_HexArray:
             assert len(circleInputList_current) == 7
 
             #######
-            # Encoding
+            # Encoding & Update state
+            enc_cwOutTuple, enc_nBitTrans, enc_boolTuple_ifBitTrans = self._codecInstance_BSCAC_7bit.encoder_core(bits_to_be_trans=copy.deepcopy(circleInputList_current),
+                                                                                                                  last_codeword=copy.deepcopy(circleCodewordTuple_current))
+
+            currentTopoTuple = self.get_dyShieldingType1_topoTuple()[idx_centerDysh_i]
+            for idx_circleSignalBits_i in range(0, 6):
+                if enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is True:
+                    idx_currentSignalBit_temp = currentTopoTuple[idx_circleSignalBits_i]
+                    if isinstance(idx_currentSignalBit_temp, int):
+                        assert flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] is False
+                        flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] = True
+                        self.updateState_signalBits_modifySingleBit(bitIdx=idx_currentSignalBit_temp, bitNewState=copy.deepcopy(enc_cwOutTuple[(idx_circleSignalBits_i + 1)]))
+                        monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+                        rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_currentSignalBit_temp].pop(0)
+                        assert rawBitIn_temp == enc_cwOutTuple[(idx_circleSignalBits_i + 1)]
+                    else:
+                        assert idx_currentSignalBit_temp is None
+                else:
+                    assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
+
+        # Clk 1 - Update dySh bits
+        self.updateState_dyShieldingType1(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S1)))
+
+        # Clk 1 - Record
+        print("---dysh1: In={}, State->{}; SignalBit state->{} ({}-bit transmitted, flag:{})".format(dataGen_dyshBitsTuple_S1,
+                                                                                                     self.get_dyShieldingType1_currentState(),
+                                                                                                     self.get_signalBits_currentState(),
+                                                                                                     monitor_nTransmitted_signalBits,
+                                                                                                     flagList_signalBits_inputTransmitted))
+        flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
+        monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+
+        # Clk 2: DySh Type 2
+
+        # Clk 2 - monitor
+        #
+        # flagList_signalBits_inputTransmitted:
+        # Once the signal bit with idx = idx_i is traversed,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to False.
+        # Once the input bit in signal bit with idx = idx_i is transmitted,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to True.
+        flagList_signalBits_inputTransmitted = len(self.get_signalBits_currentState()) * [None]
+
+        # Clk 2 - traverse all circle
+        for idx_centerDysh_i in range(0, len(self.get_dyShieldingType2_currentState())): # For each encoding circle
+            #######
+            # Get the current state: circleCodewordTuple_current
+            dyShieldingType2_currentState = self.get_dyShieldingType2_currentState()
+            circleCodewordList_current = []
+            if dyShieldingType2_currentState[idx_centerDysh_i] is None:
+                circleCodewordList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dyShieldingType2_currentState[idx_centerDysh_i] == 0:
+                circleCodewordList_current.append(0)
+            elif dyShieldingType2_currentState[idx_centerDysh_i] == 1:
+                circleCodewordList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_i in self.get_dyShieldingType2_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_i is None:
+                    circleCodewordList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_i, int)
+                    assert idx_neighboringSignalBits_i >= 0
+                    if self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 0:
+                        circleCodewordList_current.append(0)
+                    elif self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 1:
+                        circleCodewordList_current.append(1)
+                    else:
+                        assert False
+            assert len(circleCodewordList_current) == 7
+            circleCodewordTuple_current = tuple(circleCodewordList_current)
+
+            #######
+            # Get the input data to be transmitted: circuitInputList_current
+            circleInputList_current = []
+            if dataGen_dyshBitsTuple_S2[idx_centerDysh_i] is None:
+                circleInputList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dataGen_dyshBitsTuple_S2[idx_centerDysh_i] == 0:
+                circleInputList_current.append(0)
+            elif dataGen_dyshBitsTuple_S2[idx_centerDysh_i] == 1:
+                circleInputList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_k in self.get_dyShieldingType2_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_k is None:
+                    circleInputList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_k, int)
+                    assert idx_neighboringSignalBits_k >= 0
+                    if dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 0:
+                        circleInputList_current.append(0)
+                    elif dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 1:
+                        circleInputList_current.append(1)
+                    else:
+                        assert False
+                    assert flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] is None
+                    flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] = False
+            assert len(circleInputList_current) == 7
+
+            #######
+            # Encoding & Update state
+            enc_cwOutTuple, enc_nBitTrans, enc_boolTuple_ifBitTrans = self._codecInstance_BSCAC_7bit.encoder_core(bits_to_be_trans=copy.deepcopy(circleInputList_current),
+                                                                                                                  last_codeword=copy.deepcopy(circleCodewordTuple_current))
+
+            currentTopoTuple = self.get_dyShieldingType2_topoTuple()[idx_centerDysh_i]
+            for idx_circleSignalBits_i in range(0, 6):
+                if enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is True:
+                    idx_currentSignalBit_temp = currentTopoTuple[idx_circleSignalBits_i]
+                    if isinstance(idx_currentSignalBit_temp, int):
+                        assert flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] is False
+                        flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] = True
+                        self.updateState_signalBits_modifySingleBit(bitIdx=idx_currentSignalBit_temp, bitNewState=copy.deepcopy(enc_cwOutTuple[(idx_circleSignalBits_i + 1)]))
+                        monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+                        rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_currentSignalBit_temp].pop(0)
+                        assert rawBitIn_temp == enc_cwOutTuple[(idx_circleSignalBits_i + 1)]
+                    else:
+                        assert idx_currentSignalBit_temp is None
+                else:
+                    assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
+
+        # Clk 2 - Update dySh bits
+        self.updateState_dyShieldingType2(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S2)))
+
+        # Clk 2 - Reocrd
+        print("---dysh2: In={}, State->{}; SignalBit state->{} ({}-bit transmitted, flag:{})".format(dataGen_dyshBitsTuple_S2,
+                                                                                                     self.get_dyShieldingType2_currentState(),
+                                                                                                     self.get_signalBits_currentState(),
+                                                                                                     monitor_nTransmitted_signalBits,
+                                                                                                     flagList_signalBits_inputTransmitted))
+        flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
+        monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+
+
+        # Clk 3: DySh Type 3
+
+        # Clk 3 - monitor
+        #
+        # flagList_signalBits_inputTransmitted:
+        # Once the signal bit with idx = idx_i is traversed,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to False.
+        # Once the input bit in signal bit with idx = idx_i is transmitted,
+        #   flagList_signalBits_inputTransmitted[idx_i] should be changed to True.
+        flagList_signalBits_inputTransmitted = len(self.get_signalBits_currentState()) * [None]
+
+        # Clk 3 - traverse all circle
+        for idx_centerDysh_i in range(0, len(self.get_dyShieldingType3_currentState())): # For each encoding circle
+            #######
+            # Get the current state: circleCodewordTuple_current
+            dyShieldingType3_currentState = self.get_dyShieldingType3_currentState()
+            circleCodewordList_current = []
+            if dyShieldingType3_currentState[idx_centerDysh_i] is None:
+                circleCodewordList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dyShieldingType3_currentState[idx_centerDysh_i] == 0:
+                circleCodewordList_current.append(0)
+            elif dyShieldingType3_currentState[idx_centerDysh_i] == 1:
+                circleCodewordList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_i in self.get_dyShieldingType3_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_i is None:
+                    circleCodewordList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_i, int)
+                    assert idx_neighboringSignalBits_i >= 0
+                    if self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 0:
+                        circleCodewordList_current.append(0)
+                    elif self.get_signalBits_currentState()[idx_neighboringSignalBits_i] == 1:
+                        circleCodewordList_current.append(1)
+                    else:
+                        assert False
+            assert len(circleCodewordList_current) == 7
+            circleCodewordTuple_current = tuple(circleCodewordList_current)
+
+            #######
+            # Get the input data to be transmitted: circuitInputList_current
+            circleInputList_current = []
+            if dataGen_dyshBitsTuple_S3[idx_centerDysh_i] is None:
+                circleInputList_current.append(copy.deepcopy(self.get_state_virtualBit()))
+            elif dataGen_dyshBitsTuple_S3[idx_centerDysh_i] == 0:
+                circleInputList_current.append(0)
+            elif dataGen_dyshBitsTuple_S3[idx_centerDysh_i] == 1:
+                circleInputList_current.append(1)
+            else:
+                assert False
+
+            for idx_neighboringSignalBits_k in self.get_dyShieldingType3_topoTuple()[idx_centerDysh_i]:
+                if idx_neighboringSignalBits_k is None:
+                    circleInputList_current.append(self.get_state_virtualBit())
+                else:
+                    assert isinstance(idx_neighboringSignalBits_k, int)
+                    assert idx_neighboringSignalBits_k >= 0
+                    if dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 0:
+                        circleInputList_current.append(0)
+                    elif dataGen_data2bTrans_signalBits_3Clk[idx_neighboringSignalBits_k][0] == 1:
+                        circleInputList_current.append(1)
+                    else:
+                        assert False
+                    assert flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] is None
+                    flagList_signalBits_inputTransmitted[idx_neighboringSignalBits_k] = False
+            assert len(circleInputList_current) == 7
+
+            #######
+            # Encoding & Update state
+            enc_cwOutTuple, enc_nBitTrans, enc_boolTuple_ifBitTrans = self._codecInstance_BSCAC_7bit.encoder_core(bits_to_be_trans=copy.deepcopy(circleInputList_current),
+                                                                                                                  last_codeword=copy.deepcopy(circleCodewordTuple_current))
+
+            currentTopoTuple = self.get_dyShieldingType3_topoTuple()[idx_centerDysh_i]
+            for idx_circleSignalBits_i in range(0, 6):
+                if enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is True:
+                    idx_currentSignalBit_temp = currentTopoTuple[idx_circleSignalBits_i]
+                    if isinstance(idx_currentSignalBit_temp, int):
+                        assert flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] is False
+                        flagList_signalBits_inputTransmitted[idx_currentSignalBit_temp] = True
+                        self.updateState_signalBits_modifySingleBit(bitIdx=idx_currentSignalBit_temp, bitNewState=copy.deepcopy(enc_cwOutTuple[(idx_circleSignalBits_i + 1)]))
+                        monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+                        rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_currentSignalBit_temp].pop(0)
+                        assert rawBitIn_temp == enc_cwOutTuple[(idx_circleSignalBits_i + 1)]
+                    else:
+                        assert idx_currentSignalBit_temp is None
+                else:
+                    assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
+
+        # Clk 3 - Update dySh bits
+        self.updateState_dyShieldingType3(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S3)))
+
+        # Clk 3 - Reocrd
+        print("---dysh3: In={}, State->{}; SignalBit state->{} ({}-bit transmitted, flag:{})".format(dataGen_dyshBitsTuple_S3,
+                                                                                                     self.get_dyShieldingType3_currentState(),
+                                                                                                     self.get_signalBits_currentState(),
+                                                                                                     monitor_nTransmitted_signalBits,
+                                                                                                     flagList_signalBits_inputTransmitted))
+        flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
+        monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+
+
+
 
 
 
