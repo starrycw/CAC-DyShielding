@@ -1326,8 +1326,16 @@ class BitStuffingCAC_Simulation_HexArray:
         self._flag_arrayLocked = False
         self._initialize_codec()
 
-        if arrayType == "Hex_RegularA_11x8":
-            self._createHexArray_regularA_11x8()
+        if arrayType == "Hex_RegularA_9x6":
+            self._createHexArray_regularA_9x6()
+        elif arrayType == 'Hex_RegularA_12x6':
+            self._createHexArray_regularA_12x6()
+        elif arrayType == 'Hex_RegularA_12x9':
+            self._createHexArray_regularA_12x9()
+        elif arrayType == 'Hex_RegularA_18x9':
+            self._createHexArray_regularA_18x9()
+        elif arrayType == 'Hex_RegularA_18x12':
+            self._createHexArray_regularA_18x12()
         else:
             assert False
 
@@ -1397,6 +1405,30 @@ class BitStuffingCAC_Simulation_HexArray:
     ####################################################################################################################
     def get_dyShieldingType3_currentState(self):
         return copy.deepcopy(self._stateList_dyShieldingType3_current)
+
+    ####################################################################################################################
+    def get_nDyShType1_notVirtual(self):
+        '''
+
+        :return:
+        '''
+        return copy.deepcopy(self._arrayTopo_nDySh1_notVirtual)
+
+    ####################################################################################################################
+    def get_nDyShType2_notVirtual(self):
+        '''
+
+        :return:
+        '''
+        return copy.deepcopy(self._arrayTopo_nDySh2_notVirtual)
+
+    ####################################################################################################################
+    def get_nDyShType3_notVirtual(self):
+        '''
+
+        :return:
+        '''
+        return copy.deepcopy(self._arrayTopo_nDySh3_notVirtual)
 
     ####################################################################################################################
     def updateState_dyShieldingType1(self, newState_list):
@@ -1581,10 +1613,128 @@ class BitStuffingCAC_Simulation_HexArray:
     ####################################################################################################################
     ####################################################################################################################
     # Array
+
     ####################################################################################################################
-    def _createHexArray_regularA_11x8(self):
+    def _createHexArray_regularA_9x6(self):
         '''
-        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_11x8.png "
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_9x6.png "
+
+        :param n_shieldingRow:
+        :param n_shieldingCol:
+        :return:
+        '''
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = 18 * [0]
+
+        # self._stateList_signalBits_current = 36 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = 3 * [0]
+        self._stateList_dyShieldingType2_init = 3 * [0]
+        self._stateList_dyShieldingType3_init = 3 * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = 3
+        self._arrayTopo_nDySh2_notVirtual = 3
+        self._arrayTopo_nDySh3_notVirtual = 3
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoTuple_dyShieldingType1 = ((4, 1, 0, None, 6, 7),
+                                            (None, 3, 2, 5, 8, 9),
+                                            (14, 11, 10, 13, 16, 17))
+        self._unconstraintBitsTuple_dyShieldingType1 = (12, 15)
+
+        self._topoTuple_dyShieldingType2 = ((4, 5, 2, None, None, 1),
+                                            (12, 13, 10, 7, 6, None),
+                                            (14, 15, None, 9, 8, 11))
+        self._unconstraintBitsTuple_dyShieldingType2 = (0, 3, 16, 17)
+
+        self._topoTuple_dyShieldingType3 = ((4, 7, 10, 11, 8, 5),
+                                            (12, None, None, None, 16, 13),
+                                            (14, 17, None, None, None, 15))
+        self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 6, 9)
+
+    ####################################################################################################################
+    def _createHexArray_regularA_12x6(self):
+        '''
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_12x6.png "
+
+        :param n_shieldingRow:
+        :param n_shieldingCol:
+        :return:
+        '''
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = 24 * [0]
+
+        # self._stateList_signalBits_current = 36 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = 4 * [0]
+        self._stateList_dyShieldingType2_init = 4 * [0]
+        self._stateList_dyShieldingType3_init = 4 * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = 4
+        self._arrayTopo_nDySh2_notVirtual = 4
+        self._arrayTopo_nDySh3_notVirtual = 4
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoTuple_dyShieldingType1 = ((4, 1, 0, None, 8, 9),
+                                            (6, 3, 2, 5, 10, 11),
+                                            (18, 13, 12, 17, 20, 21),
+                                            (None, 15, 14, 19, 22, 23))
+        self._unconstraintBitsTuple_dyShieldingType1 = (7, 16)
+
+        self._topoTuple_dyShieldingType2 = ((4, 5, 2, None, None, 1),
+                                            (6, 7, None, None, None, 3),
+                                            (16, 17, 12, 9, 8, None),
+                                            (18, 19, 14, 11, 10, 13))
+        self._unconstraintBitsTuple_dyShieldingType2 = (0, 15, 20, 21, 22, 23)
+
+        self._topoTuple_dyShieldingType3 = ((4, 9, 12, 13, 10, 5),
+                                            (6, 11, 14, 15, None, 7),
+                                            (16, None, None, None, 20, 17),
+                                            (18, 21, None, None, 22, 19))
+        self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 8, 23)
+
+    ####################################################################################################################
+    def _createHexArray_regularA_12x9(self):
+        '''
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_12x9.png "
 
         :param n_shieldingRow:
         :param n_shieldingCol:
@@ -1609,6 +1759,10 @@ class BitStuffingCAC_Simulation_HexArray:
         self._stateList_dyShieldingType1_init = 6 * [0]
         self._stateList_dyShieldingType2_init = 6 * [0]
         self._stateList_dyShieldingType3_init = 6 * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = 6
+        self._arrayTopo_nDySh2_notVirtual = 6
+        self._arrayTopo_nDySh3_notVirtual = 6
 
         # self._stateList_dyShieldingType1_current = 6 * [0]
         # self._stateList_dyShieldingType2_current = 6 * [0]
@@ -1642,6 +1796,165 @@ class BitStuffingCAC_Simulation_HexArray:
                                             (28, 33, None, None, 34, 29),
                                             (30, 35, None, None, None, 31))
         self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 8, 23, 32)
+
+    ####################################################################################################################
+    def _createHexArray_regularA_18x9(self):
+        '''
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_18x9.png "
+
+        :param n_shieldingRow:
+        :param n_shieldingCol:
+        :return:
+        '''
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = 54 * [0]
+
+        # self._stateList_signalBits_current = 36 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = 9 * [0]
+        self._stateList_dyShieldingType2_init = 9 * [0]
+        self._stateList_dyShieldingType3_init = 9 * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = 9
+        self._arrayTopo_nDySh2_notVirtual = 9
+        self._arrayTopo_nDySh3_notVirtual = 9
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoTuple_dyShieldingType1 = ((6, 1, 0, None, 12, 13),
+                                            (8, 3, 2, 7, 14, 15),
+                                            (10, 5, 4, 9, 16, 17),
+                                            (26, 19, 18, 25, 30, 31),
+                                            (28, 21, 20, 27, 32, 33),
+                                            (None, 23, 22, 29, 34, 35),
+                                            (42, 37, 36, None, 48, 49),
+                                            (44, 39, 38, 43, 50, 51),
+                                            (46, 41, 40, 45, 52, 53))
+        self._unconstraintBitsTuple_dyShieldingType1 = (11, 24, 47)
+
+        self._topoTuple_dyShieldingType2 = ((6, 7, 2, None, None, 1),
+                                            (8, 9, 4, None, None, 3),
+                                            (10, 11, None, None, None, 5),
+                                            (24, 25, 18, 13, 12, None),
+                                            (26, 27, 20, 15, 14, 19),
+                                            (28, 29, 22, 17, 16, 21),
+                                            (42, 43, 38, 31, 30, 37),
+                                            (44, 45, 40, 33, 32, 39),
+                                            (46, 47, None, 35, 34, 41))
+        self._unconstraintBitsTuple_dyShieldingType2 = (0, 23, 36, 48, 49, 50, 51, 52, 53)
+
+        self._topoTuple_dyShieldingType3 = ((6, 13, 18, 19, 14, 7),
+                                            (8, 15, 20, 21, 16, 9),
+                                            (10, 17, 22, 23, None, 11),
+                                            (24, None, 36, 37, 30, 25),
+                                            (26, 31, 38, 39, 32, 27),
+                                            (28, 33, 40, 41, 34, 29),
+                                            (42, 49, None, None, 50, 43),
+                                            (44, 51, None, None, 52, 45),
+                                            (46, 53, None, None, None, 47))
+        self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 4, 5, 12, 35, 48)
+
+    ####################################################################################################################
+    def _createHexArray_regularA_18x12(self):
+        '''
+        See " ./Docs/BitStuffingCAC_Arrays/HexArray_regularA_18x12.png "
+
+        :param n_shieldingRow:
+        :param n_shieldingCol:
+        :return:
+        '''
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = 72 * [0]
+
+        # self._stateList_signalBits_current = 36 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = 12 * [0]
+        self._stateList_dyShieldingType2_init = 12 * [0]
+        self._stateList_dyShieldingType3_init = 12 * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = 12
+        self._arrayTopo_nDySh2_notVirtual = 12
+        self._arrayTopo_nDySh3_notVirtual = 12
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoTuple_dyShieldingType1 = ((6, 1, 0, None, 12, 13),
+                                            (8, 3, 2, 7, 14, 15),
+                                            (10, 5, 4, 9, 16, 17),
+                                            (26, 19, 18, 25, 30, 31),
+                                            (28, 21, 20, 27, 32, 33),
+                                            (None, 23, 22, 29, 34, 35),
+                                            (42, 37, 36, None, 48, 49),
+                                            (44, 39, 38, 43, 50, 51),
+                                            (46, 41, 40, 45, 52, 53),
+                                            (62, 55, 54, 61, 66, 67),
+                                            (64, 57, 56, 63, 68, 69),
+                                            (None, 59, 58, 65, 70, 71))
+        self._unconstraintBitsTuple_dyShieldingType1 = (11, 24, 47, 60)
+
+        self._topoTuple_dyShieldingType2 = ((6, 7, 2, None, None, 1),
+                                            (8, 9, 4, None, None, 3),
+                                            (10, 11, None, None, None, 5),
+                                            (24, 25, 18, 13, 12, None),
+                                            (26, 27, 20, 15, 14, 19),
+                                            (28, 29, 22, 17, 16, 21),
+                                            (42, 43, 38, 31, 30, 37),
+                                            (44, 45, 40, 33, 32, 39),
+                                            (46, 47, None, 35, 34, 41),
+                                            (60, 61, 54, 49, 48, None),
+                                            (62, 63, 56, 51, 50, 55),
+                                            (64, 65, 58, 53, 52, 57))
+        self._unconstraintBitsTuple_dyShieldingType2 = (0, 23, 36, 59, 66, 67, 68, 69, 70, 71)
+
+        self._topoTuple_dyShieldingType3 = ((6, 13, 18, 19, 14, 7),
+                                            (8, 15, 20, 21, 16, 9),
+                                            (10, 17, 22, 23, None, 11),
+                                            (24, None, 36, 37, 30, 25),
+                                            (26, 31, 38, 39, 32, 27),
+                                            (28, 33, 40, 41, 34, 29),
+                                            (42, 49, 54, 55, 50, 43),
+                                            (44, 51, 56, 57, 52, 45),
+                                            (46, 53, 58, 59, None, 47),
+                                            (60, None, None, None, 66, 61),
+                                            (62, 67, None, None, 68, 63),
+                                            (64, 69, None, None, 70, 65))
+        self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 4, 5, 12, 35, 48, 71)
 
     ################################################################################################################
     ################################################################################################################
@@ -1836,6 +2149,8 @@ class BitStuffingCAC_Simulation_HexArray:
         #   flagList_signalBits_inputTransmitted[idx_i] should be changed to True.
         flagList_signalBits_inputTransmitted = len(self.get_signalBits_currentState()) * [None]
 
+        print("---Input data (signal bits) - {}: {}".format(dataGenMethod, dataGen_data2bTrans_signalBits_3Clk))
+
         # Clk 2 - traverse all circle
         for idx_centerDysh_i in range(0, len(self.get_dyShieldingType2_currentState())): # For each encoding circle
             #######
@@ -1953,6 +2268,8 @@ class BitStuffingCAC_Simulation_HexArray:
         # Once the input bit in signal bit with idx = idx_i is transmitted,
         #   flagList_signalBits_inputTransmitted[idx_i] should be changed to True.
         flagList_signalBits_inputTransmitted = len(self.get_signalBits_currentState()) * [None]
+
+        print("---Input data (signal bits) - {}: {}".format(dataGenMethod, dataGen_data2bTrans_signalBits_3Clk))
 
         # Clk 3 - traverse all circle
         for idx_centerDysh_i in range(0, len(self.get_dyShieldingType3_currentState())): # For each encoding circle

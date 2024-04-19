@@ -159,10 +159,10 @@ if False:
     BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='full')
 
 ########################################################################################################################
-# Coding rate simulation - HexArray-RegularA-11x8
+# Coding rate simulation - HexArray-RegularA
 if True:
-    n_cycleRun = 1000
-    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_11x8")
+    n_cycleRun = 100000
+    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_18x9")
     cnt_nSignalBitsTrans = 0
     for cycle_i in range(0, n_cycleRun):
         print('Cycle-{}'.format(cycle_i))
@@ -178,14 +178,14 @@ if True:
 
     print('cnt_nSignalBitsTrans = {}'.format(cnt_nSignalBitsTrans))
     nTSV_signal = len(BSCACSimu_instance01.get_signalBits_currentState())
-    nTSV_dysh1 = 6
-    nTSV_dysh2 = 6
-    nTSV_dysh3 = 6
+    nTSV_dysh1 = BSCACSimu_instance01.get_nDyShType1_notVirtual()
+    nTSV_dysh2 = BSCACSimu_instance01.get_nDyShType2_notVirtual()
+    nTSV_dysh3 = BSCACSimu_instance01.get_nDyShType3_notVirtual()
     nTSV_dyshAll = nTSV_dysh1 + nTSV_dysh2 + nTSV_dysh3
     nTSV_all = nTSV_signal + nTSV_dyshAll
     bitOHCalc_nAll = nTSV_all * n_cycleRun * 3
     bitOHCalc_nRedundant = bitOHCalc_nAll - (nTSV_dyshAll * n_cycleRun) - cnt_nSignalBitsTrans
     bitOHCalc_OH = bitOHCalc_nRedundant / (bitOHCalc_nAll - bitOHCalc_nRedundant)
     print('signal bits coding rate: {} / {} = {}'.format(cnt_nSignalBitsTrans, (nTSV_signal * 3 * n_cycleRun), (cnt_nSignalBitsTrans / (nTSV_signal * 3 * n_cycleRun))))
-    print("nTSV_all = {}, Cycle = {}, Bit Overhead = {} / {} = {}".format(nTSV_all, n_cycleRun, bitOHCalc_nRedundant, (bitOHCalc_nAll - bitOHCalc_nRedundant), bitOHCalc_OH))
+    print("nTSV_all = {}, nTSV_dysh = ({}, {}, {}), nTSV_signal = {}, Cycle = {}, Bit Overhead = {} / {} = {}".format(nTSV_all, nTSV_dysh1, nTSV_dysh2, nTSV_dysh3, nTSV_signal, n_cycleRun, bitOHCalc_nRedundant, (bitOHCalc_nAll - bitOHCalc_nRedundant), bitOHCalc_OH))
 
