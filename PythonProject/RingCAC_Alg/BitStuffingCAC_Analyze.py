@@ -1598,9 +1598,9 @@ class BitStuffingCAC_Simulation_HexArray:
 
         # Init states of signal bits
         # State: 0 / 1
-        self._stateList_signalBits_init = 32 * [0]
+        self._stateList_signalBits_init = 36 * [0]
 
-        # self._stateList_signalBits_current = 32 * [0]
+        # self._stateList_signalBits_current = 36 * [0]
 
         # Init states of dy-shielding bits (including the virtual dy-shielding bits)
         # The virtual bits MUST be at the TAIL of the tuple !!!
@@ -1673,7 +1673,7 @@ class BitStuffingCAC_Simulation_HexArray:
         '''
 
         :param dataGenMethod:
-        :return:
+        :return: dataGenCopy_data2bTrans_signalBits_3Clk, monitor_flagsBool_ifSignalBitTrans_3Clk, monitor_nTransmitted_signalBits, monitor_signalBitsState_3Clk, monitor_dysh1State, monitor_dysh2State, monitor_dysh3State
         '''
         # Generate data
         if dataGenMethod == 'random':
@@ -1697,11 +1697,16 @@ class BitStuffingCAC_Simulation_HexArray:
                              copy.deepcopy(dataGen_signalBitsTuple_03[idx_i])]
             dataGen_data2bTrans_signalBits_3Clk.append(copy.deepcopy(threeBitsList))
 
+        dataGenCopy_data2bTrans_signalBits_3Clk = copy.deepcopy(dataGen_data2bTrans_signalBits_3Clk)
         print("---Input data (signal bits) - {}: {}".format(dataGenMethod, dataGen_data2bTrans_signalBits_3Clk))
 
         # Monitor
         monitor_flagsBool_ifSignalBitTrans_3Clk = []
         monitor_nTransmitted_signalBits = 0
+        monitor_signalBitsState_3Clk = []
+        monitor_dysh1State_3Clk = []
+        monitor_dysh2State_3Clk = []
+        monitor_dysh3State_3Clk = []
 
         # Clk 1: DySh Type 1
 
@@ -1793,6 +1798,17 @@ class BitStuffingCAC_Simulation_HexArray:
                 else:
                     assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
 
+        # Clk 1 - Unconstrained signal bits
+        for idx_signalBitUnconstrained_i in self.get_dyShieldingType1_unconstraintBitsTuple():
+            assert isinstance(idx_signalBitUnconstrained_i, int)
+            assert idx_signalBitUnconstrained_i >= 0
+            assert flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] is None
+            flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] = True
+            rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_signalBitUnconstrained_i].pop(0)
+            assert rawBitIn_temp in (0, 1)
+            self.updateState_signalBits_modifySingleBit(bitIdx=idx_signalBitUnconstrained_i, bitNewState=copy.deepcopy(rawBitIn_temp))
+            monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+
         # Clk 1 - Update dySh bits
         self.updateState_dyShieldingType1(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S1)))
 
@@ -1804,6 +1820,10 @@ class BitStuffingCAC_Simulation_HexArray:
                                                                                                      flagList_signalBits_inputTransmitted))
         flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
         monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+        monitor_signalBitsState_3Clk.append(copy.deepcopy(self.get_signalBits_currentState()))
+        monitor_dysh1State_3Clk.append(copy.deepcopy(self.get_dyShieldingType1_currentState()))
+        monitor_dysh2State_3Clk.append(copy.deepcopy(self.get_dyShieldingType2_currentState()))
+        monitor_dysh3State_3Clk.append(copy.deepcopy(self.get_dyShieldingType3_currentState()))
 
         # Clk 2: DySh Type 2
 
@@ -1895,6 +1915,17 @@ class BitStuffingCAC_Simulation_HexArray:
                 else:
                     assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
 
+        # Clk 2 - Unconstrained signal bits
+        for idx_signalBitUnconstrained_i in self.get_dyShieldingType2_unconstraintBitsTuple():
+            assert isinstance(idx_signalBitUnconstrained_i, int)
+            assert idx_signalBitUnconstrained_i >= 0
+            assert flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] is None
+            flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] = True
+            rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_signalBitUnconstrained_i].pop(0)
+            assert rawBitIn_temp in (0, 1)
+            self.updateState_signalBits_modifySingleBit(bitIdx=idx_signalBitUnconstrained_i, bitNewState=copy.deepcopy(rawBitIn_temp))
+            monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+
         # Clk 2 - Update dySh bits
         self.updateState_dyShieldingType2(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S2)))
 
@@ -1906,6 +1937,10 @@ class BitStuffingCAC_Simulation_HexArray:
                                                                                                      flagList_signalBits_inputTransmitted))
         flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
         monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+        monitor_signalBitsState_3Clk.append(copy.deepcopy(self.get_signalBits_currentState()))
+        monitor_dysh1State_3Clk.append(copy.deepcopy(self.get_dyShieldingType1_currentState()))
+        monitor_dysh2State_3Clk.append(copy.deepcopy(self.get_dyShieldingType2_currentState()))
+        monitor_dysh3State_3Clk.append(copy.deepcopy(self.get_dyShieldingType3_currentState()))
 
 
         # Clk 3: DySh Type 3
@@ -1998,6 +2033,17 @@ class BitStuffingCAC_Simulation_HexArray:
                 else:
                     assert enc_boolTuple_ifBitTrans[(idx_circleSignalBits_i + 1)] is False
 
+        # Clk 3 - Unconstrained signal bits
+        for idx_signalBitUnconstrained_i in self.get_dyShieldingType3_unconstraintBitsTuple():
+            assert isinstance(idx_signalBitUnconstrained_i, int)
+            assert idx_signalBitUnconstrained_i >= 0
+            assert flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] is None
+            flagList_signalBits_inputTransmitted[idx_signalBitUnconstrained_i] = True
+            rawBitIn_temp = dataGen_data2bTrans_signalBits_3Clk[idx_signalBitUnconstrained_i].pop(0)
+            assert rawBitIn_temp in (0, 1)
+            self.updateState_signalBits_modifySingleBit(bitIdx=idx_signalBitUnconstrained_i, bitNewState=copy.deepcopy(rawBitIn_temp))
+            monitor_nTransmitted_signalBits = monitor_nTransmitted_signalBits + 1
+
         # Clk 3 - Update dySh bits
         self.updateState_dyShieldingType3(newState_list=copy.deepcopy(list(dataGen_dyshBitsTuple_S3)))
 
@@ -2009,6 +2055,12 @@ class BitStuffingCAC_Simulation_HexArray:
                                                                                                      flagList_signalBits_inputTransmitted))
         flagTuple_signalBits_inputTransmitted = tuple(flagList_signalBits_inputTransmitted)
         monitor_flagsBool_ifSignalBitTrans_3Clk.append(copy.deepcopy(flagTuple_signalBits_inputTransmitted))
+        monitor_signalBitsState_3Clk.append(copy.deepcopy(self.get_signalBits_currentState()))
+        monitor_dysh1State_3Clk.append(copy.deepcopy(self.get_dyShieldingType1_currentState()))
+        monitor_dysh2State_3Clk.append(copy.deepcopy(self.get_dyShieldingType2_currentState()))
+        monitor_dysh3State_3Clk.append(copy.deepcopy(self.get_dyShieldingType3_currentState()))
+
+        return dataGenCopy_data2bTrans_signalBits_3Clk, monitor_flagsBool_ifSignalBitTrans_3Clk, monitor_nTransmitted_signalBits, monitor_signalBitsState_3Clk, monitor_dysh1State_3Clk, monitor_dysh2State_3Clk, monitor_dysh3State_3Clk
 
 
 
