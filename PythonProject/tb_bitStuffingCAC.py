@@ -5,8 +5,10 @@ import time
 import RingCAC_Alg.BitStuffingCAC_Codec
 
 if True: # Testbench for Bit-stuffing CAC
+    simuStep_max = 10000000
     Codec01 = RingCAC_Alg.BitStuffingCAC_Codec.BSCAC_ForHexDyS2C_2CSupFor7bitGroup_Main(instance_id=time.time())
     cnt_transmittedDataBits = 0
+    cnt_transmittedDataBits_signalBitsOnly = 0
     cnt_min_nDataProcessed = 7
     cntList_sumStuffingBits = [0, 0, 0, 0, 0, 0, 0]
 
@@ -42,7 +44,7 @@ if True: # Testbench for Bit-stuffing CAC
         cwrand_init.append(random.choice((0, 1)))
 
     cwTuple_last = tuple(cwrand_init)
-    for simu_step_idx in range(0, 10000000):
+    for simu_step_idx in range(0, simuStep_max):
         datarand_new = []
         for idx_ii in range(0, 7):
             datarand_new.append(random.choice((0, 1)))
@@ -77,13 +79,21 @@ if True: # Testbench for Bit-stuffing CAC
 
         cwTuple_last = copy.deepcopy(cwTuple_output)
         cnt_transmittedDataBits = cnt_transmittedDataBits + n_dataProcessed
+        assert n_dataProcessed > 1
+        cnt_transmittedDataBits_signalBitsOnly = cnt_transmittedDataBits_signalBitsOnly + n_dataProcessed - 1
+
 
         for idx_stuffing in flagTuple_stuffingbit:
             cntList_sumStuffingBits[idx_stuffing] = cntList_sumStuffingBits[idx_stuffing] + 1
 
-    print("{} / {} = {}".format(cnt_transmittedDataBits, (simu_step_idx + 1), cnt_transmittedDataBits / (simu_step_idx + 1)))
+    print("Coding rate = {} / ({} * 7) = {}".format(cnt_transmittedDataBits, simuStep_max, cnt_transmittedDataBits / (simuStep_max * 7)))
+    print("Coding rate (signal bits only) = {} / ({} * 6) = {}".format(cnt_transmittedDataBits_signalBitsOnly, simuStep_max, cnt_transmittedDataBits_signalBitsOnly / (simuStep_max * 6)))
     print("Min length of the data processed in single cycle: {}".format(cnt_min_nDataProcessed))
     print("Stuffing bits count: {}".format(cntList_sumStuffingBits))
     print("xtalk - raw - {}".format(xtalkCntDict_rawData))
     print("xtalk - encoded - {}".format(xtalkCntDict_encoded))
+    bitOHEsti_all = 9
+    bitOHEsti_trans = (cnt_transmittedDataBits_signalBitsOnly / simuStep_max) + 1
+    bitOHEsti_float = (bitOHEsti_all - bitOHEsti_trans) / bitOHEsti_trans
+    print("Bit Overhead Estimation: {}".format(bitOHEsti_float))
 

@@ -162,7 +162,7 @@ if False:
 # Coding rate simulation - HexArray-RegularA
 if True:
     n_cycleRun = 100000
-    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_18x9")
+    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
     cnt_nSignalBitsTrans = 0
     for cycle_i in range(0, n_cycleRun):
         print('Cycle-{}'.format(cycle_i))
