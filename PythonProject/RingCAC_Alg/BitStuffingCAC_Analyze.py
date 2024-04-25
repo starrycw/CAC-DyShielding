@@ -2136,6 +2136,196 @@ class BitStuffingCAC_Simulation_HexArray:
                                             (64, 69, None, None, 70, 65))
         self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 4, 5, 12, 35, 48, 71)
 
+    ####################################################################################################################
+    def _createHexArrayAuto_regularA_6m_x_3n(self, m, n):
+        '''
+        Generate the HexArray_regularA topo with 6m rows & 3n cols.
+        The examples of HexArray_regularA topo are in ' ./Docs/BitStuffingCAC_Arrays/ '.
+
+        :param m:
+        :param n:
+        :return:
+        '''
+        assert isinstance(m, int)
+        assert isinstance(n, int)
+        assert m >= 2
+        assert n >= 2
+        n_arrayRow = 6 * m
+        n_arrayCol = 3 * n
+
+        assert self._flag_arrayLocked is False
+        self._flag_arrayLocked = True
+
+        # State of virtual bit
+        self._state_virtualBit = 0
+
+        # Create topo list
+        cntDict_n_dyshTypeX = {'s1': 0,
+                               's2': 0,
+                               's3': 0}
+        cntInt_n_signalBits = 0
+        topoList_2d_idxColRow = [] # topoList_2d_idxColRow[col_i][row_i] = bitIdx (int for signal bits, 's1', 's2', 's3' for dysh, and False for nothing).
+        signalBitIdx_nextOne = 0
+        dyshType_currentCol = 's2'
+        for idx_col_i in range(0, n_arrayCol):
+            topoList_currentCol = []
+            if (idx_col_i % 2) == 0:
+                bitTypeNext_int = 1 # 0 - dysh, 1 & 2 - signal bit.
+                for idx_row_i in range(0, n_arrayRow):
+                    if (idx_row_i % 2) == 1:
+                        topoList_currentCol.append(False)
+                    elif (idx_row_i % 2) == 0:
+                        if bitTypeNext_int == 0:
+                            topoList_currentCol.append(copy.deepcopy(dyshType_currentCol))
+                            cntDict_n_dyshTypeX[dyshType_currentCol] = cntDict_n_dyshTypeX[dyshType_currentCol] + 1
+                        else:
+                            assert bitTypeNext_int in (1, 2)
+                            topoList_currentCol.append(copy.deepcopy(signalBitIdx_nextOne))
+                            signalBitIdx_nextOne = signalBitIdx_nextOne + 1
+                            cntInt_n_signalBits = cntInt_n_signalBits + 1
+                        bitTypeNext_int = bitTypeNext_int + 1
+                        if bitTypeNext_int == 3:
+                            bitTypeNext_int = 0
+                        else:
+                            assert bitTypeNext_int in (1, 2)
+                    else:
+                        assert False
+
+            elif (idx_col_i % 2) == 1:
+                bitTypeNext_int = 0
+                for idx_row_i in range(0, n_arrayRow):
+                    if (idx_row_i % 2) == 0:
+                        topoList_currentCol.append(False)
+                    elif (idx_row_i % 2) == 1:
+                        if bitTypeNext_int == 0:
+                            topoList_currentCol.append(copy.deepcopy(dyshType_currentCol))
+                            cntDict_n_dyshTypeX[dyshType_currentCol] = cntDict_n_dyshTypeX[dyshType_currentCol] + 1
+                        else:
+                            assert bitTypeNext_int in (1, 2)
+                            topoList_currentCol.append(copy.deepcopy(signalBitIdx_nextOne))
+                            signalBitIdx_nextOne = signalBitIdx_nextOne + 1
+                            cntInt_n_signalBits = cntInt_n_signalBits + 1
+                        bitTypeNext_int = bitTypeNext_int + 1
+                        if bitTypeNext_int == 3:
+                            bitTypeNext_int = 0
+                        else:
+                            assert bitTypeNext_int in (1, 2)
+                    else:
+                        assert False
+            else:
+                assert False
+
+            # Store the col list
+            topoList_2d_idxColRow.append(tuple(copy.deepcopy(topoList_currentCol)))
+
+            # Update dysh Type
+            if dyshType_currentCol == 's1':
+                dyshType_currentCol = 's3'
+            elif dyshType_currentCol == 's2':
+                dyshType_currentCol = 's1'
+            elif dyshType_currentCol == 's3':
+                dyshType_currentCol = 's2'
+
+        # for col_iiii in topoList_2d_idxColRow:
+        #     print(col_iiii)
+        topoTuple_2d_idxColRow = tuple(copy.deepcopy(topoList_2d_idxColRow))
+        assert bitTypeNext_int == cntInt_n_signalBits
+
+        # Topo analyze
+        ############################################################################
+        # Init states of signal bits
+        # State: 0 / 1
+        self._stateList_signalBits_init = cntInt_n_signalBits * [0]
+
+        # self._stateList_signalBits_current = 36 * [0]
+
+        # Init states of dy-shielding bits (including the virtual dy-shielding bits)
+        # The virtual bits MUST be at the TAIL of the tuple !!!
+        # The state of virtual bits MUST be 'None' !!!
+        # State: 0 /1 /None
+        self._stateList_dyShieldingType1_init = cntDict_n_dyshTypeX['s1'] * [0]
+        self._stateList_dyShieldingType2_init = cntDict_n_dyshTypeX['s2'] * [0]
+        self._stateList_dyShieldingType3_init = cntDict_n_dyshTypeX['s3'] * [0]
+
+        self._arrayTopo_nDySh1_notVirtual = copy.deepcopy(cntDict_n_dyshTypeX['s1'])
+        self._arrayTopo_nDySh2_notVirtual = copy.deepcopy(cntDict_n_dyshTypeX['s2'])
+        self._arrayTopo_nDySh3_notVirtual = copy.deepcopy(cntDict_n_dyshTypeX['s3'])
+
+        # self._stateList_dyShieldingType1_current = 6 * [0]
+        # self._stateList_dyShieldingType2_current = 6 * [0]
+        # self._stateList_dyShieldingType3_current = 6 * [0]
+
+        # The adjacent bits of each dy-shielding bit, and the bits that are unconstrained.
+        # The element are the idx of signal bits.
+        # The idx of virtual bits MUST be 'None' !!!
+        # The adjacent bits tuple of each dy-shielding bit MUST be ranked by encoding order !!!
+        # The order of each encoding circle are specified by the figures in " ./Docs/BitStuffingCAC_Arrays/xxx.png ".
+        self._topoList_dyShieldingType1 = []
+        self._unconstraintBitsList_dyShieldingType1 = []
+
+        self._topoList_dyShieldingType2 = []
+        self._unconstraintBitsList_dyShieldingType2 = []
+
+        self._topoList_dyShieldingType3 = []
+        self._unconstraintBitsList_dyShieldingType3 = []
+
+        for idx_topoCol_k in range(0, n_arrayCol):
+            for idx_topoRow_k in range(0, n_arrayRow):
+                # signal bit
+                if isinstance(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k], int):
+                    # Check if this signal bit has adjacent dysh type1/2/3.
+                    flagBool_hasAdjacentDyshType1 = False
+                    flagBool_hasAdjacentDyshType2 = False
+                    flagBool_hasAdjacentDyshType3 = False
+                    idxList_signalBitInArrayEdge = []
+                    for temp_idxTuple_k in ((idx_topoCol_k, idx_topoRow_k - 2),
+                                            (idx_topoCol_k, idx_topoRow_k + 2),
+                                            (idx_topoCol_k - 1, idx_topoRow_k - 1),
+                                            (idx_topoCol_k - 1, idx_topoRow_k + 1),
+                                            (idx_topoCol_k + 1, idx_topoRow_k - 1),
+                                            (idx_topoCol_k + 1, idx_topoRow_k + 1)):
+                        if (temp_idxTuple_k[0] >= 0) and (temp_idxTuple_k[0] < n_arrayCol) and (temp_idxTuple_k[1] >= 0) and (temp_idxTuple_k[1] < n_arrayRow):
+                            if topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 's1':
+                                flagBool_hasAdjacentDyshType1 = True
+                            elif topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 's2':
+                                flagBool_hasAdjacentDyshType2 = True
+                            elif topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 's3':
+                                flagBool_hasAdjacentDyshType3 = True
+                            else:
+                                assert (isinstance(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]], int) or
+                                        topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] is False)
+                        else:
+                            if topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] not in idxList_signalBitInArrayEdge:
+                                idxList_signalBitInArrayEdge.append(copy.deepcopy(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k]))
+
+                    if flagBool_hasAdjacentDyshType1 is False:
+                        self._unconstraintBitsList_dyShieldingType1.append(copy.deepcopy(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k]))
+                    else:
+                        assert flagBool_hasAdjacentDyshType1 is True
+
+                    if flagBool_hasAdjacentDyshType2 is False:
+                        self._unconstraintBitsList_dyShieldingType2.append(copy.deepcopy(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k]))
+                    else:
+                        assert flagBool_hasAdjacentDyshType2 is True
+
+                    if flagBool_hasAdjacentDyshType3 is False:
+                        self._unconstraintBitsList_dyShieldingType3.append(copy.deepcopy(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k]))
+                    else:
+                        assert flagBool_hasAdjacentDyshType3 is True
+
+                # dysh
+                elif topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] in ('s1', 's2', 's3'):
+                    #TODO: 202404260000
+
+                else:
+                    assert topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] is False
+
+
+
+
+
+
+
     ################################################################################################################
     ################################################################################################################
     # Data Generation Method

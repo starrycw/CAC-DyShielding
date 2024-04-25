@@ -160,7 +160,7 @@ if False:
 
 ########################################################################################################################
 # Coding rate simulation - HexArray-RegularA
-if True:
+if False:
     n_cycleRun = 100000
     BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
     cnt_nSignalBitsTrans = 0
@@ -189,3 +189,7 @@ if True:
     print('signal bits coding rate: {} / {} = {}'.format(cnt_nSignalBitsTrans, (nTSV_signal * 3 * n_cycleRun), (cnt_nSignalBitsTrans / (nTSV_signal * 3 * n_cycleRun))))
     print("nTSV_all = {}, nTSV_dysh = ({}, {}, {}), nTSV_signal = {}, Cycle = {}, Bit Overhead = {} / {} = {}".format(nTSV_all, nTSV_dysh1, nTSV_dysh2, nTSV_dysh3, nTSV_signal, n_cycleRun, bitOHCalc_nRedundant, (bitOHCalc_nAll - bitOHCalc_nRedundant), bitOHCalc_OH))
 
+########################################################################################################################
+if True:
+    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
+    BSCACSimu_instance01._createHexArrayAuto_regularA_6m_x_3n(m=3, n=3)
