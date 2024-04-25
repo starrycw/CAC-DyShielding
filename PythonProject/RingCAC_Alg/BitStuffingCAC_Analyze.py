@@ -1322,7 +1322,7 @@ class BitStuffingCAC_Analyze_HexArray:
 ###
 ########################################################################################################################
 class BitStuffingCAC_Simulation_HexArray:
-    def __init__(self, arrayType):
+    def __init__(self, arrayType, additionParamsTuple = None):
         self._flag_arrayLocked = False
         self._initialize_codec()
 
@@ -1340,6 +1340,11 @@ class BitStuffingCAC_Simulation_HexArray:
             self._createHexArray_regularA_18x9()
         elif arrayType == 'Hex_RegularA_18x12':
             self._createHexArray_regularA_18x12()
+        elif arrayType == 'HexArrayAuto_regularA_6m_x_3n':
+            assert isinstance(additionParamsTuple, tuple)
+            assert len(additionParamsTuple) == 2
+            self._createHexArrayAuto_regularA_6m_x_3n(m=copy.deepcopy(additionParamsTuple[0]),
+                                                      n=copy.deepcopy(additionParamsTuple[1]))
 
         else:
             assert False
@@ -2164,7 +2169,7 @@ class BitStuffingCAC_Simulation_HexArray:
                                's2': 0,
                                's3': 0}
         cntInt_n_signalBits = 0
-        topoList_2d_idxColRow = [] # topoList_2d_idxColRow[col_i][row_i] = bitIdx (int for signal bits, 's1', 's2', 's3' for dysh, and False for nothing).
+        topoList_2d_idxColRow = [] # topoList_2d_idxColRow[col_i][row_i] = bitIdx (int for signal bits, 's1', 's2', 's3' for dysh, and 'nothing' for nothing).
         signalBitIdx_nextOne = 0
         dyshType_currentCol = 's2'
         for idx_col_i in range(0, n_arrayCol):
@@ -2173,7 +2178,7 @@ class BitStuffingCAC_Simulation_HexArray:
                 bitTypeNext_int = 1 # 0 - dysh, 1 & 2 - signal bit.
                 for idx_row_i in range(0, n_arrayRow):
                     if (idx_row_i % 2) == 1:
-                        topoList_currentCol.append(False)
+                        topoList_currentCol.append('nothing')
                     elif (idx_row_i % 2) == 0:
                         if bitTypeNext_int == 0:
                             topoList_currentCol.append(copy.deepcopy(dyshType_currentCol))
@@ -2195,7 +2200,7 @@ class BitStuffingCAC_Simulation_HexArray:
                 bitTypeNext_int = 0
                 for idx_row_i in range(0, n_arrayRow):
                     if (idx_row_i % 2) == 0:
-                        topoList_currentCol.append(False)
+                        topoList_currentCol.append('nothing')
                     elif (idx_row_i % 2) == 1:
                         if bitTypeNext_int == 0:
                             topoList_currentCol.append(copy.deepcopy(dyshType_currentCol))
@@ -2229,7 +2234,7 @@ class BitStuffingCAC_Simulation_HexArray:
         # for col_iiii in topoList_2d_idxColRow:
         #     print(col_iiii)
         topoTuple_2d_idxColRow = tuple(copy.deepcopy(topoList_2d_idxColRow))
-        assert bitTypeNext_int == cntInt_n_signalBits
+        assert signalBitIdx_nextOne == cntInt_n_signalBits
 
         # Topo analyze
         ############################################################################
@@ -2293,7 +2298,7 @@ class BitStuffingCAC_Simulation_HexArray:
                                 flagBool_hasAdjacentDyshType3 = True
                             else:
                                 assert (isinstance(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]], int) or
-                                        topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] is False)
+                                        topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 'nothing')
                         else:
                             if topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] not in idxList_signalBitInArrayEdge:
                                 idxList_signalBitInArrayEdge.append(copy.deepcopy(topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k]))
@@ -2315,10 +2320,100 @@ class BitStuffingCAC_Simulation_HexArray:
 
                 # dysh
                 elif topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] in ('s1', 's2', 's3'):
-                    #TODO: 202404260000
+                    idxList_currentDyshAdjacent = []
+                    if topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] == 's1':
+                        # d1 ~ d6
+                        for temp_idxTuple_k in ((idx_topoCol_k, idx_topoRow_k + 2),
+                                                (idx_topoCol_k - 1, idx_topoRow_k + 1),
+                                                (idx_topoCol_k - 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k, idx_topoRow_k - 2),
+                                                (idx_topoCol_k + 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k + 1, idx_topoRow_k + 1)):
+                            # Virtual signal bits
+                            if (temp_idxTuple_k[0] < 0) or (temp_idxTuple_k[0] >= n_arrayCol) or (temp_idxTuple_k[1] < 0) or (temp_idxTuple_k[1] >= n_arrayRow):
+                                idxList_currentDyshAdjacent.append(None)
+                            elif topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 'nothing':
+                                idxList_currentDyshAdjacent.append(None)
+                                assert (temp_idxTuple_k[0] % 2) == 1
+                                assert temp_idxTuple_k[1] in (1, (n_arrayRow - 2))
+                            # Signal bits
+                            elif isinstance(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]], int):
+                                idxList_currentDyshAdjacent.append(copy.deepcopy(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]]))
+                            # Each adjacent bit of dysh must be signal bit or virtual signal bit.
+                            else:
+                                assert False
+                        idxTuple_currentDyshAdjacent = tuple(copy.deepcopy(idxList_currentDyshAdjacent))
+                        self._topoList_dyShieldingType1.append(copy.deepcopy(idxTuple_currentDyshAdjacent))
+
+                    elif topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] == 's2':
+                        # d1 ~ d6
+                        for temp_idxTuple_k in ((idx_topoCol_k + 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k + 1, idx_topoRow_k + 1),
+                                                (idx_topoCol_k, idx_topoRow_k + 2),
+                                                (idx_topoCol_k - 1, idx_topoRow_k + 1),
+                                                (idx_topoCol_k - 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k, idx_topoRow_k - 2)):
+                            # Virtual signal bits
+                            if (temp_idxTuple_k[0] < 0) or (temp_idxTuple_k[0] >= n_arrayCol) or (temp_idxTuple_k[1] < 0) or (temp_idxTuple_k[1] >= n_arrayRow):
+                                idxList_currentDyshAdjacent.append(None)
+                            elif topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 'nothing':
+                                idxList_currentDyshAdjacent.append(None)
+                                assert (temp_idxTuple_k[0] % 2) == 1
+                                assert temp_idxTuple_k[1] in (1, (n_arrayRow - 2))
+                            # Signal bits
+                            elif isinstance(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]], int):
+                                idxList_currentDyshAdjacent.append(copy.deepcopy(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]]))
+                            # Each adjacent bit of dysh must be signal bit or virtual signal bit.
+                            else:
+                                assert False
+                        idxTuple_currentDyshAdjacent = tuple(copy.deepcopy(idxList_currentDyshAdjacent))
+                        self._topoList_dyShieldingType2.append(copy.deepcopy(idxTuple_currentDyshAdjacent))
+
+                    elif topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] == 's3':
+                        # d1 ~ d6
+                        for temp_idxTuple_k in ((idx_topoCol_k - 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k, idx_topoRow_k - 2),
+                                                (idx_topoCol_k + 1, idx_topoRow_k - 1),
+                                                (idx_topoCol_k + 1, idx_topoRow_k + 1),
+                                                (idx_topoCol_k, idx_topoRow_k + 2),
+                                                (idx_topoCol_k - 1, idx_topoRow_k + 1)):
+                            # Virtual signal bits
+                            if (temp_idxTuple_k[0] < 0) or (temp_idxTuple_k[0] >= n_arrayCol) or (temp_idxTuple_k[1] < 0) or (temp_idxTuple_k[1] >= n_arrayRow):
+                                idxList_currentDyshAdjacent.append(None)
+                            elif topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]] == 'nothing':
+                                idxList_currentDyshAdjacent.append(None)
+                                assert (temp_idxTuple_k[0] % 2) == 1
+                                assert temp_idxTuple_k[1] in (1, (n_arrayRow - 2))
+                            # Signal bits
+                            elif isinstance(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]], int):
+                                idxList_currentDyshAdjacent.append(copy.deepcopy(topoTuple_2d_idxColRow[temp_idxTuple_k[0]][temp_idxTuple_k[1]]))
+                            # Each adjacent bit of dysh must be signal bit or virtual signal bit.
+                            else:
+                                assert False
+                        idxTuple_currentDyshAdjacent = tuple(copy.deepcopy(idxList_currentDyshAdjacent))
+                        self._topoList_dyShieldingType3.append(copy.deepcopy(idxTuple_currentDyshAdjacent))
+
+                    else:
+                        assert False
 
                 else:
-                    assert topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] is False
+                    assert topoTuple_2d_idxColRow[idx_topoCol_k][idx_topoRow_k] == 'nothing'
+
+        self._topoTuple_dyShieldingType1 = tuple(copy.deepcopy(self._topoList_dyShieldingType1))
+        self._unconstraintBitsTuple_dyShieldingType1 = tuple(copy.deepcopy(self._unconstraintBitsList_dyShieldingType1))
+
+        self._topoTuple_dyShieldingType2 = tuple(copy.deepcopy(self._topoList_dyShieldingType2))
+        self._unconstraintBitsTuple_dyShieldingType2 = tuple(copy.deepcopy(self._unconstraintBitsList_dyShieldingType2))
+
+        self._topoTuple_dyShieldingType3 = tuple(copy.deepcopy(self._topoList_dyShieldingType3))
+        self._unconstraintBitsTuple_dyShieldingType3 = tuple(copy.deepcopy(self._unconstraintBitsList_dyShieldingType3))
+
+        print("topo-dysh1: {}".format(self._topoTuple_dyShieldingType1))
+        print("topo-unconstraint1: {}".format(self._unconstraintBitsTuple_dyShieldingType1))
+        print("topo-dysh2: {}".format(self._topoTuple_dyShieldingType2))
+        print("topo-unconstraint2: {}".format(self._unconstraintBitsTuple_dyShieldingType2))
+        print("topo-dysh3: {}".format(self._topoTuple_dyShieldingType3))
+        print("topo-unconstraint3: {}".format(self._unconstraintBitsTuple_dyShieldingType3))
 
 
 
