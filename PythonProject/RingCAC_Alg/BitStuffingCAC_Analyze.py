@@ -2151,6 +2151,8 @@ class BitStuffingCAC_Simulation_HexArray:
         :param n:
         :return:
         '''
+        print("RUN: _createHexArrayAuto_regularA_6m_x_3n - m={}, n={}".format(m, n))
+
         assert isinstance(m, int)
         assert isinstance(n, int)
         assert m >= 2
@@ -2241,6 +2243,7 @@ class BitStuffingCAC_Simulation_HexArray:
         # Init states of signal bits
         # State: 0 / 1
         self._stateList_signalBits_init = cntInt_n_signalBits * [0]
+        print("--> nSignalBits: {}".format(cntInt_n_signalBits))
 
         # self._stateList_signalBits_current = 36 * [0]
 
@@ -2408,12 +2411,13 @@ class BitStuffingCAC_Simulation_HexArray:
         self._topoTuple_dyShieldingType3 = tuple(copy.deepcopy(self._topoList_dyShieldingType3))
         self._unconstraintBitsTuple_dyShieldingType3 = tuple(copy.deepcopy(self._unconstraintBitsList_dyShieldingType3))
 
-        print("topo-dysh1: {}".format(self._topoTuple_dyShieldingType1))
-        print("topo-unconstraint1: {}".format(self._unconstraintBitsTuple_dyShieldingType1))
-        print("topo-dysh2: {}".format(self._topoTuple_dyShieldingType2))
-        print("topo-unconstraint2: {}".format(self._unconstraintBitsTuple_dyShieldingType2))
-        print("topo-dysh3: {}".format(self._topoTuple_dyShieldingType3))
-        print("topo-unconstraint3: {}".format(self._unconstraintBitsTuple_dyShieldingType3))
+        print("--> topo-dysh1: {}".format(self._topoTuple_dyShieldingType1))
+        print("--> topo-unconstraint1: {}".format(self._unconstraintBitsTuple_dyShieldingType1))
+        print("--> topo-dysh2: {}".format(self._topoTuple_dyShieldingType2))
+        print("--> topo-unconstraint2: {}".format(self._unconstraintBitsTuple_dyShieldingType2))
+        print("--> topo-dysh3: {}".format(self._topoTuple_dyShieldingType3))
+        print("--> topo-unconstraint3: {}".format(self._unconstraintBitsTuple_dyShieldingType3))
+        print("--> dysh: {}".format(cntDict_n_dyshTypeX))
 
 
 
