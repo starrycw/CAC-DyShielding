@@ -192,10 +192,10 @@ if False:
 ########################################################################################################################
 ########################################################################################################################
 # Coding rate simulation - HexArray-RegularA-6m_x_3n
-if True:
-    n_cycleRun = 100
+if False:
+    n_cycleRun = 100000
     BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="HexArrayAuto_regularA_6m_x_3n",
-                                                                                     additionParamsTuple=(10, 20))
+                                                                                     additionParamsTuple=(3, 6))
     cnt_nSignalBitsTrans = 0
     for cycle_i in range(0, n_cycleRun):
         print('Cycle-{}'.format(cycle_i))
@@ -224,3 +224,29 @@ if True:
 
 ########################################################################################################################
 
+########################################################################################################################
+########################################################################################################################
+# Get the sum of the number of transmitted bits in each case: old_state = listIdx, dataIn = All 0 ~ All 1;
+if True:
+    msbFirst = True
+    BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
+    resultTuple_sumValue, resultTuple_minAndMax = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
+    print("The sum of transmitted bits for each old_state: {}".format(resultTuple_sumValue))
+    print("The min / max value of the sum of transmitted bits for each /'old_state + data_in/' case: {} / {}".format(resultTuple_minAndMax[0], resultTuple_minAndMax[1]))
+    print("The min / max value of the sum of transmitted bits for each old_state: {} / {}".format(resultTuple_minAndMax[2], resultTuple_minAndMax[3]))
+    result_average = resultTuple_minAndMax[4] / (2 ** 7)
+    print("The value of the sum of transmitted bits for each old_state: {} / {} = {}".format(resultTuple_minAndMax[4], (2 ** 7), result_average))
+    calcSignalBitCodingRate_lowest = (resultTuple_minAndMax[2] - (2 ** 7)) / ((2 ** 7) * 6)
+    calcSignalBitCodingRate_highest = (resultTuple_minAndMax[3] - (2 ** 7)) / ((2 ** 7) * 6)
+    calcSignalBitCodingRate_average = (result_average - (2 ** 7)) / ((2 ** 7) * 6)
+
+    calcOH_lowest = (((2 ** 7) * 9) - resultTuple_minAndMax[3]) / (resultTuple_minAndMax[3])
+    calcOH_highest = (((2 ** 7) * 9) - resultTuple_minAndMax[2]) / (resultTuple_minAndMax[2])
+    calcOH_average = (((2 ** 7) * 9) - result_average) / (result_average)
+
+    print("The coding rate of signal bits only: BEST={}, AVG={}, WORST={}".format(calcSignalBitCodingRate_highest,
+                                                                                  calcSignalBitCodingRate_average,
+                                                                                  calcSignalBitCodingRate_lowest))
+    print("The bit overhead of inf array: BEST={}, AVG={}, WORST={}".format(calcOH_lowest,
+                                                                            calcOH_average,
+                                                                            calcOH_highest))

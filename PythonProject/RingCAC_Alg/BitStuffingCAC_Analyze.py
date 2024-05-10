@@ -919,6 +919,65 @@ class BitStuffingCAC_Analyze_HexArray:
         return transCntMatrix_top
 
     ####################################################################################################################
+    def get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod(self):
+        '''
+        Calculate the Cnt of the transmitted bits in single encoded group (7-bit codeword).
+        The number of transmitted bits in each "old_state + data_in" case is added up.
+        And the weight of each "old_state + data_in" case is 1 instead of the occurrence probability.
+        :return: tuple_nBitTransCnt, tuple_minAndMax - tuple_nBitTransCnt is a tuple, in which the idx represents the old state,
+                and the value is the sum value of the transmitted data bits in all "old_state(=idx) + data_in(all 0 ~ all 1)" cases.
+                tuple_minAndMax is a tuple contains five int value:
+                (1) The min number of transmitted data bits in single "old_state + data_in" case;
+                (2) The max number of transmitted data bits in single "old_state + data_in" case;
+                (3) The min sum value of the number of transmitted data bits of all "old_state" cases;
+                (4) The max sum value of the number of transmitted data bits of all "old_state" cases;
+                (5) The sum of all the number of transmitted data bits.
+        '''
+        transCntMatrix_top = _transitionCntMatrix(n_size=(2**7))
+        list_nBitTransCnt = []
+        allSum_nBitTransCnt = 0
+        maxValue_nBitTransCnt_eachOldState = 0
+        minValue_nBitTransCnt_eachOldState = (2**7) * 7
+        maxValue_nBitTransCnt_eachCase = 0
+        minValue_nBitTransCnt_eachCase = 7
+        for cw_origin_int in range(0, (2**7)):
+            cnt_nBitTrans = 0
+            transCnt_list = (2**7) * [0]
+            cw_origin_tuple = self.tool_convert_int2BinTuple(input_int=cw_origin_int, n_bit=7, msbFirst=self._getConfig_msbFirst())
+            for dataIn_int in range(0, (2**7)):
+                dataIn_list = self.tool_convert_int2BinList(input_int=dataIn_int, n_bit=7, msbFirst=self._getConfig_msbFirst())
+                cw_new_tuple, caseResult_n_transmittedBits, temp_unprocessedDataBitsList = self._CodecInstance_7bit.encoder_core(bits_to_be_trans=dataIn_list, last_codeword=cw_origin_tuple)
+                cw_new_int = self.tool_convert_binListOrTuple2Int(input_bin_seq=cw_new_tuple, msbFirst=self._getConfig_msbFirst())
+                transCnt_list[cw_new_int] = transCnt_list[cw_new_int] + 1
+                cnt_nBitTrans = cnt_nBitTrans + caseResult_n_transmittedBits
+                if maxValue_nBitTransCnt_eachCase < caseResult_n_transmittedBits:
+                    maxValue_nBitTransCnt_eachCase = copy.deepcopy(caseResult_n_transmittedBits)
+                if minValue_nBitTransCnt_eachCase > caseResult_n_transmittedBits:
+                    minValue_nBitTransCnt_eachCase = copy.deepcopy(caseResult_n_transmittedBits)
+            # transProb_list = []
+            # for transCnt_i in transCnt_list:
+            #     transProb_list.append(fractions.Fraction(copy.deepcopy(transCnt_i), (2**7)))
+            transCntMatrix_top.modifyMatrix_singleRow(row_index=cw_origin_int, newProbList=copy.deepcopy(transCnt_list))
+
+            list_nBitTransCnt.append(copy.deepcopy(cnt_nBitTrans))
+
+            if maxValue_nBitTransCnt_eachOldState < cnt_nBitTrans:
+                maxValue_nBitTransCnt_eachOldState = copy.deepcopy(cnt_nBitTrans)
+            if minValue_nBitTransCnt_eachOldState > cnt_nBitTrans:
+                minValue_nBitTransCnt_eachOldState = copy.deepcopy(cnt_nBitTrans)
+
+            allSum_nBitTransCnt = allSum_nBitTransCnt + cnt_nBitTrans
+
+        tuple_nBitTransCnt = tuple(copy.deepcopy(list_nBitTransCnt))
+        tuple_minAndMax = (copy.deepcopy(minValue_nBitTransCnt_eachCase),
+                           copy.deepcopy(maxValue_nBitTransCnt_eachCase),
+                           copy.deepcopy(minValue_nBitTransCnt_eachOldState),
+                           copy.deepcopy(maxValue_nBitTransCnt_eachOldState),
+                           copy.deepcopy(allSum_nBitTransCnt))
+
+        return tuple_nBitTransCnt, tuple_minAndMax
+
+    ####################################################################################################################
     ####################################################################################################################
     # \mu_a calculation & coding rate analyze
     #
