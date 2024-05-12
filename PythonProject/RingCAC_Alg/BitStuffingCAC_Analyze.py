@@ -504,6 +504,21 @@ class _Z3Solver_forMuACalc_Simplfied_useMatrixBQ:
         self._solution_model = self._solver_main.model()
         return copy.deepcopy(self._solution_model)
 
+    ####################################################################################################################
+    def modelEvaluate_sumOfMuATimesWeight(self, weightTuple):
+        '''
+        Calculate the sum of (\muA[i] * weight[i]).
+        :param weightTuple:
+        :return:
+        '''
+        assert isinstance(weightTuple, tuple)
+        assert len(weightTuple) == (2 ** 6)
+        sumResult = self.getSolutionModel().evaluate(
+            z3.Sum( [(self._var_muA_List[idx_ei] * weightTuple[idx_ei]) for idx_ei in range(0, 64)] )
+        )
+        return copy.deepcopy(sumResult)
+
+
 
     ####################################################################################################################
     def _addConstraint_muAmatrixBQmuA(self):
@@ -1179,7 +1194,10 @@ class BitStuffingCAC_Analyze_HexArray:
         for modelVar_d in solutionModel_instance.decls():
             print(modelVar_d.name(), '=\t', solutionModel_instance[modelVar_d])
 
+
         # print("###### {}".format(solutionModel_instance.evaluate( z3.Sum([z3Solver_instance.get_var_muAList()[idx_sss] for idx_sss in range(0, 32)]) )))
+        return z3Solver_instance
+
 
     ####################################################################################################################
     def _calcMuA_subtask_getMatrixC(self):
@@ -1365,12 +1383,9 @@ class BitStuffingCAC_Analyze_HexArray:
             print(modelVar_d.name(), '=\t', solutionModel_instance[modelVar_d])
 
 
-    def analyzeMuA_getCodeRate_oneClk6bit(self):
-        '''
 
-        :return:
-        '''
-        pass # TODO: To Be Continue...
+
+
 
 
 ########################################################################################################################

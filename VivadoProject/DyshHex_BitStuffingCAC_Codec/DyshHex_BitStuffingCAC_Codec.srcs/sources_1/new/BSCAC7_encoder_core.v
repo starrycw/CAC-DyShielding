@@ -3,14 +3,14 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2024/05/08 15:21:11
+// Create Date: 2024/05/10 15:46:12
 // Design Name: 
-// Module Name: BSCAC7_encoder
+// Module Name: BSCAC7_encoder_core
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
 // Description: THe 7-bit bit-stuffing CAC encoder, designed for DyshHex TSV arrays.
-//
+// 
 // Dependencies: 
 // 
 // Revision:
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module BSCAC7_encoder(
+module BSCAC7_encoder_core(
     input wire [0 : 6] state_old, 
     input wire [0 : 6] data_in, 
     output wire [0 : 6] state_new, 
@@ -90,3 +90,4 @@ module BSCAC7_encoder(
 
 
 endmodule
+

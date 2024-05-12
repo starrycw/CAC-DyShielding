@@ -1,3 +1,6 @@
+import copy
+import z3 as z3
+
 import RingCAC_Alg.BitStuffingCAC_Analyze as BitStuffingCAC_Analyze
 
 ########################################################################################################################
@@ -83,10 +86,30 @@ if False:
 
 ########################################################################################################################
 # Calc \mu_a by BQ - Simplified! Basic constraint!
-if False:
+if True:
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='basic')
+    muA_z3SolverInstance = BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='basic')
+
+    nBitTransCnt_tuple_by7bitOldState, nBitTransMinAndMax_tuple = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
+    assert len(nBitTransCnt_tuple_by7bitOldState) == (2 ** 7)
+    nBitTransExpectation_list = []
+
+    for idx_i in range(0, (2 ** 6)):
+        cnt_nBitSum = nBitTransCnt_tuple_by7bitOldState[idx_i] + nBitTransCnt_tuple_by7bitOldState[idx_i + (2 ** 6)]
+        nBitTransExpectation_list.append(copy.deepcopy(cnt_nBitSum))
+
+    nBitTransExpectation_tuple = tuple(nBitTransExpectation_list)
+    nBitAll = (2 ** 7) * 2
+
+    sumOfMuATimesWeight = muA_z3SolverInstance.modelEvaluate_sumOfMuATimesWeight(weightTuple=copy.deepcopy(nBitTransExpectation_tuple))
+    print("Expectation of the number of transmitted bits (signal bits only) in each 7-bit group: "
+          "\n       {}\n       divided by\n       {}\n".format(sumOfMuATimesWeight,
+                                                                         nBitAll))
+
+
+
+
 
 ########################################################################################################################
 # Calc \mu_a by BQ - Simplified! Full constraint!
@@ -227,6 +250,7 @@ if False:
 ########################################################################################################################
 ########################################################################################################################
 # Get the sum of the number of transmitted bits in each case: old_state = listIdx, dataIn = All 0 ~ All 1;
+# And then calculate the min / average / max bit overhead.
 if True:
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
@@ -250,3 +274,7 @@ if True:
     print("The bit overhead of inf array: BEST={}, AVG={}, WORST={}".format(calcOH_lowest,
                                                                             calcOH_average,
                                                                             calcOH_highest))
+
+########################################################################################################################
+########################################################################################################################
+
