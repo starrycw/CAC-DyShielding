@@ -1382,6 +1382,8 @@ class BitStuffingCAC_Analyze_HexArray:
         for modelVar_d in solutionModel_instance.decls():
             print(modelVar_d.name(), '=\t', solutionModel_instance[modelVar_d])
 
+        return z3Solver_instance
+
 
 
 

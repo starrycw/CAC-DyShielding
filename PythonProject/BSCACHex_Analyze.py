@@ -4,8 +4,12 @@ import z3 as z3
 import RingCAC_Alg.BitStuffingCAC_Analyze as BitStuffingCAC_Analyze
 
 ########################################################################################################################
-# Calculate the transition probability of single encoded group (7-bit codeword).
-if False:
+########################################################################################################################
+def calcTransProbOfSingle7bitGroup():
+    '''
+    Calculate the transition probability of single encoded group (7-bit codeword).
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     transProbMatrix = BSCACAnalyze_instance01.get_transProb_singleGroup_oneClockPeriod()
@@ -16,8 +20,12 @@ if False:
     transProbMatrix.showMatrix_mainTimesN(n_int=(2**7), config_vmin=0, config_dpi=500)
 
 ########################################################################################################################
-# Calculate the transition cnt of single encoded group (7-bit codeword).
-if False:
+########################################################################################################################
+def calcTransCntOfSingle7bitGroup():
+    '''
+    Calculate the transition cnt of single encoded group (7-bit codeword).
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     transCntMatrix = BSCACAnalyze_instance01.get_transCnt_singleGroup_oneClockPeriod()
@@ -27,15 +35,12 @@ if False:
     transCntMatrix.showMatrix_main(config_vmin=-0.05, config_dpi=500)
 
 ########################################################################################################################
-# Calc \mu_a
-# if False:
-#     msbFirst = True
-#     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-#     BSCACAnalyze_instance01.calcMuA_main()
-
 ########################################################################################################################
-# Calc Matrix Q & Matrix B
-if False:
+def getMuAByBQ_subtask_getMatrixBAndMatrixQ():
+    '''
+    Calc Matrix B & Matrix Q
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     matrixB = BSCACAnalyze_instance01._calcMuA_subtask_getMatrixB()
@@ -65,9 +70,15 @@ if False:
         print("[row{}-{}] \t {}".format(idx_i, rowSum_matrixQ, matrixQ[idx_i]))
         assert rowSum_matrixQ == 256
 
+    return copy.deepcopy(matrixB), copy.deepcopy(matrixQ)
+
 ########################################################################################################################
-# Calc matrix BQ
-if False:
+########################################################################################################################
+def getMuAByBQ_subtask_getMatrixBQ():
+    '''
+    Calc matrix BQ
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     matrixBQ = BSCACAnalyze_instance01._calcMuASimplified_subtask_getMatrixBQ()
@@ -84,9 +95,16 @@ if False:
         print("Row{}\t - Sum{} - {}".format(idx_cnt, sum_row_i, matrixBQ_row_i))
         idx_cnt = idx_cnt + 1
 
+    return copy.deepcopy(matrixBQ)
+
 ########################################################################################################################
-# Calc \mu_a by BQ - Simplified! Basic constraint!
-if True:
+########################################################################################################################
+def getMuAByBQ_main_basicConstraints():
+    '''
+    Calc \mu_a by BQ.
+    Basic constraints only!
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     muA_z3SolverInstance = BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='basic')
@@ -112,15 +130,41 @@ if True:
 
 
 ########################################################################################################################
-# Calc \mu_a by BQ - Simplified! Full constraint!
-if False:
+########################################################################################################################
+def getMuAByBQ_main_fullConstraints():
+    '''
+    Calc \mu_a by BQ.
+    Full constraints applied!
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='full')
+    muA_z3SolverInstance = BSCACAnalyze_instance01.calcMuASimplified_useMatrixBQ_main(constraintSet='full')
+
+    nBitTransCnt_tuple_by7bitOldState, nBitTransMinAndMax_tuple = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
+    assert len(nBitTransCnt_tuple_by7bitOldState) == (2 ** 7)
+    nBitTransExpectation_list = []
+
+    for idx_i in range(0, (2 ** 6)):
+        cnt_nBitSum = nBitTransCnt_tuple_by7bitOldState[idx_i] + nBitTransCnt_tuple_by7bitOldState[idx_i + (2 ** 6)]
+        nBitTransExpectation_list.append(copy.deepcopy(cnt_nBitSum))
+
+    nBitTransExpectation_tuple = tuple(nBitTransExpectation_list)
+    nBitAll = (2 ** 7) * 2
+
+    sumOfMuATimesWeight = muA_z3SolverInstance.modelEvaluate_sumOfMuATimesWeight(
+        weightTuple=copy.deepcopy(nBitTransExpectation_tuple))
+    print("Expectation of the number of transmitted bits (signal bits only) in each 7-bit group: "
+          "\n       {}\n       divided by\n       {}\n".format(sumOfMuATimesWeight,
+                                                               nBitAll))
 
 ########################################################################################################################
-# Calc matrix C
-if False:
+########################################################################################################################
+def getMuAByCQ_subtask_getMatrixC():
+    '''
+    Calc matrix C
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     matrixR_a, matrixR_b, matrixR_c = BSCACAnalyze_instance01._calcMuA_subtask_getMatrixC()
@@ -168,23 +212,66 @@ if False:
     print("ColSum\tC\t{}".format(colSumList_c))
 
 ########################################################################################################################
-# Calc \mu_a by CQ - Simplified! Basic constraint!
-if False:
+########################################################################################################################
+def getMuAByCQ_main_basicConstraints():
+    '''
+    Calc \mu_a by CQ.
+    Basic constraints only!
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='basic')
+    muA_z3SolverInstance = BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='basic')
+
+    nBitTransCnt_tuple_by7bitOldState, nBitTransMinAndMax_tuple = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
+    assert len(nBitTransCnt_tuple_by7bitOldState) == (2 ** 7)
+    nBitTransExpectation_list = []
+
+    for idx_i in range(0, (2 ** 6)):
+        cnt_nBitSum = nBitTransCnt_tuple_by7bitOldState[idx_i] + nBitTransCnt_tuple_by7bitOldState[idx_i + (2 ** 6)]
+        nBitTransExpectation_list.append(copy.deepcopy(cnt_nBitSum))
+
+    nBitTransExpectation_tuple = tuple(nBitTransExpectation_list)
+    nBitAll = (2 ** 7) * 2
+
+    sumOfMuATimesWeight = muA_z3SolverInstance.modelEvaluate_sumOfMuATimesWeight(weightTuple=copy.deepcopy(nBitTransExpectation_tuple))
+    print("Expectation of the number of transmitted bits (signal bits only) in each 7-bit group: "
+          "\n       {}\n       divided by\n       {}\n".format(sumOfMuATimesWeight,
+                                                                         nBitAll))
 
 ########################################################################################################################
-# Calc \mu_a by CQ - Simplified! Full constraint!
-if False:
+########################################################################################################################
+def getMuAByCQ_main_fullConstraints():
+    '''
+    Calc \mu_a by CQ.
+    Full constraints applied!
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
-    BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='full')
+    muA_z3SolverInstance = BSCACAnalyze_instance01.calcMuASimplified_useMatrixCQ_main(constraintSet='full')
+
+    nBitTransCnt_tuple_by7bitOldState, nBitTransMinAndMax_tuple = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
+    assert len(nBitTransCnt_tuple_by7bitOldState) == (2 ** 7)
+    nBitTransExpectation_list = []
+
+    for idx_i in range(0, (2 ** 6)):
+        cnt_nBitSum = nBitTransCnt_tuple_by7bitOldState[idx_i] + nBitTransCnt_tuple_by7bitOldState[idx_i + (2 ** 6)]
+        nBitTransExpectation_list.append(copy.deepcopy(cnt_nBitSum))
+
+    nBitTransExpectation_tuple = tuple(nBitTransExpectation_list)
+    nBitAll = (2 ** 7) * 2
+
+    sumOfMuATimesWeight = muA_z3SolverInstance.modelEvaluate_sumOfMuATimesWeight(
+        weightTuple=copy.deepcopy(nBitTransExpectation_tuple))
+    print("Expectation of the number of transmitted bits (signal bits only) in each 7-bit group: "
+          "\n       {}\n       divided by\n       {}\n".format(sumOfMuATimesWeight,
+                                                               nBitAll))
 
 ########################################################################################################################
-# Coding rate simulation - HexArray-RegularA
-if False:
-    n_cycleRun = 100000
+########################################################################################################################
+def simulation_codingRateSimu_HexArrayRegularA_13x9(n_cycleRun = 100000):
+    # n_cycleRun = 100000
     BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
     cnt_nSignalBitsTrans = 0
     for cycle_i in range(0, n_cycleRun):
@@ -214,11 +301,19 @@ if False:
 
 ########################################################################################################################
 ########################################################################################################################
-# Coding rate simulation - HexArray-RegularA-6m_x_3n
-if False:
-    n_cycleRun = 100000
+def simulation_codingRateSimu_HexArrayRegularA_6mx3n(m, n, n_cycleRun):
+    '''
+    Coding rate simulation - HexArray-RegularA-6m_x_3n
+    :param m:
+    :param n:
+    :param n_cycleRun:
+    :return:
+    '''
+    assert isinstance(m, int)
+    assert isinstance(n, int)
+    assert isinstance(n_cycleRun, int)
     BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="HexArrayAuto_regularA_6m_x_3n",
-                                                                                     additionParamsTuple=(3, 6))
+                                                                                     additionParamsTuple=(m, n))
     cnt_nSignalBitsTrans = 0
     for cycle_i in range(0, n_cycleRun):
         print('Cycle-{}'.format(cycle_i))
@@ -251,7 +346,12 @@ if False:
 ########################################################################################################################
 # Get the sum of the number of transmitted bits in each case: old_state = listIdx, dataIn = All 0 ~ All 1;
 # And then calculate the min / average / max bit overhead.
-if True:
+def calcNumberOfTransBitsOfSingle7bitGroup():
+    '''
+    Get the sum of the number of transmitted bits in each case: old_state = listIdx, dataIn = All 0 ~ All 1;
+    And then calculate the min / average / max bit overhead.
+    :return:
+    '''
     msbFirst = True
     BSCACAnalyze_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Analyze_HexArray(config_msbFirst=msbFirst)
     resultTuple_sumValue, resultTuple_minAndMax = BSCACAnalyze_instance01.get_nBitTransmittedCnt_matrixByOldState_singleGroup_oneClockPeriod()
@@ -275,6 +375,9 @@ if True:
                                                                             calcOH_average,
                                                                             calcOH_highest))
 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
 
