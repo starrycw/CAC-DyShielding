@@ -27,12 +27,23 @@ if False: # Codec02
             assert dec_in == decoder_out
             assert RingCAC_Alg.CAC_enum.ringCAC_trans_check(trans_tuple=cw_tuple, max_xtalk=2)
 
+if False: # Codec03-FNSCATF
+    for len_cw in range(4, 25):
+        Codec003 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSCATF(len_cw=len_cw)
+        max_input = Codec003.getParam_maxInputLimitation()
+        for dec_in in range(0, max_input + 1):
+            cw_tuple = Codec003.encode(dec_value=dec_in)
+            decoder_out = Codec003.decode(bin_tuple=copy.deepcopy(cw_tuple))
+            print("{} -> {} -> {}".format(dec_in, cw_tuple, decoder_out))
+            assert dec_in == decoder_out
+            assert RingCAC_Alg.CAC_enum.ringCAC_trans_check(trans_tuple=cw_tuple, max_xtalk=2)
+
 if False: # Codebook Calc - 01
     for len_cw in range(4, 21):
         RingCAC_Alg.CAC_enum.calc_codeword_number_all(n_bit=len_cw)
 
 
-if True: # Bit Overhead Calc - 01
+if False: # Bit Overhead Calc - 01
     for len_cw in range(4, 21):
         Codec001 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC(len_cw=len_cw)
         max_cw_value = Codec001.getParam_maxInputLimitation()
@@ -56,3 +67,13 @@ if False: # Bit Overhead Calc - 02
         overhead = (len_cw - max_input_binLen) / max_input_binLen
         ns_tuple = Codec002.getParam_nsTuple()
         print("cwLen={} - maxDec={} - maxInBitLen={} - maxInDec={} - overhead={} - NS={}".format(len_cw, max_cw_value, max_input_binLen, max_input_binValue, overhead, ns_tuple))
+
+if True: # Bit Overhead Calc - 03 - FNSCATF
+    for len_cw in range(4, 101):
+        Codec003 = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSCATF(len_cw=len_cw)
+        max_cw_value = Codec003.getParam_maxInputLimitation()
+        max_input_binLen = math.floor(math.log2(max_cw_value))
+        max_input_binValue = (2 ** max_input_binLen) - 1
+        overhead = (len_cw - max_input_binLen) / max_input_binLen
+        fns_tuple = Codec003.getParam_fnsTuple()
+        print("cwLen={} - maxDec={} - maxInBitLen={} - maxInDec={} - overhead={} - NS={}".format(len_cw, max_cw_value, max_input_binLen, max_input_binValue, overhead, fns_tuple))

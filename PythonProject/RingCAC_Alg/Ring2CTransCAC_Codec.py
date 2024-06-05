@@ -315,3 +315,164 @@ class Codec_Ring2CTransCAC_FNSBased(Codec_Ring2CTransCAC):
 
     def getParam_codewordNumberTuple_byCodeLength(self):
         return copy.deepcopy(self._param_codewordNumberTuple_byCodeLength)
+
+class Codec_Ring2CTransCAC_FNSCATF(Codec_Ring2CTransCAC):
+    def __init__(self, len_cw):
+        super().__init__(len_cw)
+        self._param_fnsTuple = copy.deepcopy(self.initialize_fnsSeq(n_element=len_cw))
+
+    def initialize_fnsSeq(self, n_element: int) -> tuple[int, ...]:
+        '''
+        NS generation - FNS-based implementation
+        :param n_element:
+        :return:
+        '''
+        assert isinstance(n_element, int) and n_element > 2
+        fns_list = [1, 1]
+        for nbit_i in range(2, n_element+3):
+            fns_list.append(fns_list[-1] + fns_list[-2])
+        fns_tuple = tuple(fns_list)
+        return fns_tuple
+
+    def getParam_fnsElement(self, seq_idx: int) -> int:
+        '''
+        Return the element with the idx of seq_idx in the FNS seq.
+        The idx of first element is 0.
+
+        :param seq_idx:
+        :return:
+        '''
+        return self._param_fnsTuple[seq_idx]
+
+    def getParam_fnsTuple(self) -> tuple[int, ...]:
+        '''
+        Return the FNS seq.
+        The idx of first element is 0.
+
+        :return:
+        '''
+        return copy.deepcopy(self._param_fnsTuple)
+
+    def encode(self, dec_value: int) -> tuple:
+        '''
+        Encoder.
+        The first element (idx = 0) of the output tuple is the LSB.
+        :param dec_value:
+        :return:
+        '''
+        assert isinstance(dec_value, int) and 0 <= dec_value <= self.getParam_maxInputLimitation()
+        cw_list = []
+        res_value = dec_value
+        cw_length = self.getParam_cwLength()
+
+        # Generate MSB
+        if res_value >= self.getParam_fnsElement(seq_idx=cw_length):
+            cw_list.append(1)
+            cw_list.append(0)
+            idxVar_j = cw_length - 1
+            idxVar_k = cw_length - 2
+            res_value = res_value - self.getParam_fnsElement(seq_idx=cw_length)
+        else:
+            cw_list.append(0)
+            idxVar_j = cw_length + 1
+            idxVar_k = cw_length - 1
+
+        # Generate other bits
+        for idx_i in range(idxVar_k, 1, -1):
+            idxVar_j = idxVar_j - 1
+            if (res_value < self.getParam_fnsElement(seq_idx=(idxVar_j - 1))) or (cw_list[-1] == 1):
+                cw_list.append(0)
+            else:
+                assert cw_list[-1] == 0
+                cw_list.append(1)
+                res_value = res_value - self.getParam_fnsElement(seq_idx=(idxVar_j - 1))
+
+            # print(idx_i, cw_list)
+
+        if cw_list[0] == 1:
+            cw_list.append(0)
+            assert res_value == 0
+        else:
+            assert cw_list[0] == 0
+            if res_value == 0:
+                cw_list.append(0)
+            else:
+                assert res_value == 1
+                cw_list.append(1)
+
+        # print(cw_list)
+        assert len(cw_list) == self.getParam_cwLength()
+        cw_list.reverse()
+        cw_tuple = tuple(cw_list)
+        return cw_tuple
+
+    def decode(self, bin_tuple: tuple[int, ...]) -> int:
+        '''
+        Decoder.
+        The first element (idx=0) of the input bin_tuple should be the LSB!
+        :param bin_tuple:
+        :return:
+        '''
+        cw_length = self.getParam_cwLength()
+        assert isinstance(bin_tuple, tuple) and len(bin_tuple) == cw_length
+
+        dec_value = bin_tuple[-1] * self.getParam_fnsElement(seq_idx=cw_length)
+        idx_current = -1
+        for idx_i in range(cw_length - 1, 0, -1):
+            idx_current = idx_current - 1
+            if bin_tuple[-1] == 0:
+                dec_value = dec_value + (bin_tuple[idx_current] * self.getParam_fnsElement(seq_idx=(cw_length + idx_current + 1)))
+            else:
+                assert bin_tuple[-1] == 1
+                dec_value = dec_value + (bin_tuple[idx_current] * self.getParam_fnsElement(seq_idx=(cw_length + idx_current)))
+
+        return dec_value
+
+    def encoder_top(self, decValue_int, lastState_tuple):
+        assert isinstance(decValue_int, int)
+        assert decValue_int >= 0
+        newState_tuple = self.encode(dec_value=decValue_int)
+        assert len(newState_tuple) == len(lastState_tuple)
+
+        xorCodeword_list = []
+        for idx_i in range(0, len(newState_tuple)):
+            if (newState_tuple[idx_i]) == 0 and (lastState_tuple[idx_i] == 0):
+                xorCodeword_list.append(0)
+            elif (newState_tuple[idx_i]) == 0 and (lastState_tuple[idx_i] == 1):
+                xorCodeword_list.append(1)
+            elif (newState_tuple[idx_i]) == 1 and (lastState_tuple[idx_i] == 0):
+                xorCodeword_list.append(1)
+            elif (newState_tuple[idx_i]) == 1 and (lastState_tuple[idx_i] == 1):
+                xorCodeword_list.append(0)
+            else:
+                assert False
+
+        xorCodeword_tuple = tuple(copy.deepcopy(xorCodeword_list))
+
+        return xorCodeword_tuple
+
+    def decoder_top(self, xorCodeword_tuple, lastState_tuple):
+        assert isinstance(xorCodeword_tuple, tuple)
+        assert isinstance(lastState_tuple, tuple)
+        assert len(xorCodeword_tuple) == len(lastState_tuple)
+
+        g_list = []
+        for idx_i in range(0, len(xorCodeword_tuple)):
+            if (xorCodeword_tuple[idx_i]) == 0 and (lastState_tuple[idx_i] == 0):
+                g_list.append(0)
+            elif (xorCodeword_tuple[idx_i]) == 0 and (lastState_tuple[idx_i] == 1):
+                g_list.append(1)
+            elif (xorCodeword_tuple[idx_i]) == 1 and (lastState_tuple[idx_i] == 0):
+                g_list.append(1)
+            elif (xorCodeword_tuple[idx_i]) == 1 and (lastState_tuple[idx_i] == 1):
+                g_list.append(0)
+            else:
+                assert False
+
+        g_tuple = tuple(copy.deepcopy(g_list))
+
+        dec_value = self.decode(bin_tuple=g_tuple)
+
+        return copy.deepcopy(dec_value)
+
+
