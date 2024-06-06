@@ -6,6 +6,7 @@
 # Version: 20240605
 
 import copy
+import math
 
 
 class Codeword_Xtalk_Calculator:
@@ -179,13 +180,15 @@ class Array_Xtalk_Calculator:
         return True
 
 
-    def calc_xtalk_level_rectTopo(self, array_cw01, array_cw02, array_shield):
+    def calc_xtalk_level_rectTopo(self, array_cw01, array_cw02, array_shield, edgeTSVXtalkZoom = 1, edgeTSVPunishment = 0):
         '''
         输入t-时刻阵列中传输的码字（array_cw01），t+时刻阵列中传输的码字（array_cw02），以及屏蔽标志位（array_shield），计算阵列中的串扰。
 
         :param array_cw01: 二维元组，元素为整数0或1，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。
         :param array_cw02: 二维元组，元素为整数0或1，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。
         :param array_shield: 二维元组，元素为bool(或整数0或)，True表示设置为屏蔽线，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。需要注意的是，被标记为屏蔽线的TSV上传输的数据应始终为0！
+        :param edgeTSVXtalkZoom: int，默认为1。边缘TSV之间的串扰级别将乘以该数值。
+        :param edgeTSVPunishment: int, 默认为0.该数值将被加到每个边缘TSV的串扰级别中。
         :return: cw_xtalk_tuple
         '''
 
@@ -311,7 +314,28 @@ class Array_Xtalk_Calculator:
                                                           diff_aggressor=cw_diff_tuple[idx_row + 1][idx_col + 1])
 
 
-                    xtalk_sum = xtalk_a + xtalk_w + xtalk_d + xtalk_s + ( (xtalk_aw + xtalk_as + xtalk_dw + xtalk_ds) / 4 )
+                    weight_with_edgeEffect = [1, 1, 1, 1]
+                    edgeTSVFlag = False
+                    if (idx_row == (self.get_n_row() - 1)) or (idx_row == 0):
+                        weight_with_edgeEffect[0] = copy.deepcopy(edgeTSVXtalkZoom)
+                        weight_with_edgeEffect[2] = copy.deepcopy(edgeTSVXtalkZoom)
+                        edgeTSVFlag = True
+                    if (idx_col == (self.get_n_col() - 1)) or (idx_col == 0):
+                        weight_with_edgeEffect[1] = copy.deepcopy(edgeTSVXtalkZoom)
+                        weight_with_edgeEffect[3] = copy.deepcopy(edgeTSVXtalkZoom)
+                        edgeTSVFlag = True
+
+
+
+                    xtalk_sum_float = ((xtalk_a * weight_with_edgeEffect[0]) +
+                                 (xtalk_w * weight_with_edgeEffect[1]) +
+                                 (xtalk_d * weight_with_edgeEffect[2]) +
+                                 (xtalk_s * weight_with_edgeEffect[3]) +
+                                 ( (xtalk_aw + xtalk_as + xtalk_dw + xtalk_ds) / 4 ))
+                    if edgeTSVFlag is True:
+                        xtalk_sum_float = xtalk_sum_float + edgeTSVPunishment
+
+                    xtalk_sum = (math.ceil(xtalk_sum_float * 4)) / 4
                     row_xtalk_list.append(xtalk_sum)
                     assert len(row_xtalk_list) == idx_col + 1
 
@@ -321,7 +345,7 @@ class Array_Xtalk_Calculator:
 
         return cw_xtalk_tuple
 
-    def calc_xtalk_level_hexTopoA(self, array_cw01, array_cw02, array_shield):
+    def calc_xtalk_level_hexTopoA(self, array_cw01, array_cw02, array_shield, edgeTSVXtalkZoom = 1, edgeTSVPunishment = 0):
         '''
         输入t-时刻阵列中传输的码字（array_cw01），t+时刻阵列中传输的码字（array_cw02），以及屏蔽标志位（array_shield），计算阵列中的串扰。
         该六边形阵列拓扑是在矩形阵列基础上简单改动而来的：奇数行（或者说是行idx为偶数的行）整体左移一点，然后行之间距离缩小一点。
@@ -329,6 +353,8 @@ class Array_Xtalk_Calculator:
         :param array_cw01: 二维元组，元素为整数0或1，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。
         :param array_cw02: 二维元组，元素为整数0或1，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。
         :param array_shield: 二维元组，元素为bool(或整数0或)，True表示设置为屏蔽线，外层索引为行idx，内层索引位列idx。必须与阵列大小相对应。需要注意的是，被标记为屏蔽线的TSV上传输的数据应始终为0！
+        :param edgeTSVXtalkZoom: int，默认为1。边缘TSV之间的串扰级别将乘以该数值。
+        :param edgeTSVPunishment: int, 默认为0.该数值将被加到每个边缘TSV的串扰级别中。
         :return: cw_xtalk_tuple
         '''
 
@@ -381,9 +407,11 @@ class Array_Xtalk_Calculator:
                     row_xtalk_list.append(None)
                     assert len(row_xtalk_list) == idx_col + 1
                 else:
+                    is_edge_tsv = False
                     # 左
                     if self.check_array_idx(tsvidx_row=idx_row, tsvidx_col=idx_col - 1) is False:
                         xtalk_left = 0
+                        is_edge_tsv = True
                     elif array_shield[idx_row][idx_col - 1] is True:
                         xtalk_left = 0
                     else:
@@ -393,6 +421,7 @@ class Array_Xtalk_Calculator:
                     # 右
                     if self.check_array_idx(tsvidx_row=idx_row, tsvidx_col=idx_col + 1) is False:
                         xtalk_right = 0
+                        is_edge_tsv = True
                     elif array_shield[idx_row][idx_col + 1] is True:
                         xtalk_right = 0
                     else:
@@ -432,6 +461,7 @@ class Array_Xtalk_Calculator:
                     # 左上
                     if self.check_array_idx(tsvidx_row=rowIdx_LU, tsvidx_col=colIdx_LU) is False:
                         xtalk_lu = 0
+                        is_edge_tsv = True
                     elif array_shield[rowIdx_LU][colIdx_LU] is True:
                         xtalk_lu = 0
                     else:
@@ -441,6 +471,7 @@ class Array_Xtalk_Calculator:
                     # 左下
                     if self.check_array_idx(tsvidx_row=rowIdx_LD, tsvidx_col=colIdx_LD) is False:
                         xtalk_ld = 0
+                        is_edge_tsv = True
                     elif array_shield[rowIdx_LD][colIdx_LD] is True:
                         xtalk_ld = 0
                     else:
@@ -450,6 +481,7 @@ class Array_Xtalk_Calculator:
                     # 右上
                     if self.check_array_idx(tsvidx_row=rowIdx_RU, tsvidx_col=colIdx_RU) is False:
                         xtalk_ru = 0
+                        is_edge_tsv = True
                     elif array_shield[rowIdx_RU][colIdx_RU] is True:
                         xtalk_ru = 0
                     else:
@@ -459,6 +491,7 @@ class Array_Xtalk_Calculator:
                     # 右下
                     if self.check_array_idx(tsvidx_row=rowIdx_RD, tsvidx_col=colIdx_RD) is False:
                         xtalk_rd = 0
+                        is_edge_tsv = True
                     elif array_shield[rowIdx_RD][colIdx_RD] is True:
                         xtalk_rd = 0
                     else:
@@ -467,8 +500,34 @@ class Array_Xtalk_Calculator:
 
 
 
+                    weight_with_edgeEffect = [1, 1, 1, 1, 1, 1]
+                    edgeTSVFlag = False
+                    if (idx_row == (self.get_n_row() - 1)) or (idx_row == 0):
+                        weight_with_edgeEffect[0] = copy.deepcopy(edgeTSVXtalkZoom)
+                        weight_with_edgeEffect[1] = copy.deepcopy(edgeTSVXtalkZoom)
+                        edgeTSVFlag = True
+                    if (idx_col == (self.get_n_col() - 1)) or (idx_col == 0):
+                        edgeTSVFlag = True
+                        if (idx_row % 2 == 0):
+                            weight_with_edgeEffect[2] = copy.deepcopy(edgeTSVXtalkZoom)
+                            weight_with_edgeEffect[3] = copy.deepcopy(edgeTSVXtalkZoom)
+                        elif (idx_row % 2 == 1):
+                            weight_with_edgeEffect[4] = copy.deepcopy(edgeTSVXtalkZoom)
+                            weight_with_edgeEffect[5] = copy.deepcopy(edgeTSVXtalkZoom)
+                        else:
+                            assert False
+                    xtalk_sum_float = ((xtalk_left * weight_with_edgeEffect[0]) +
+                                 (xtalk_right * weight_with_edgeEffect[1]) +
+                                 (xtalk_lu * weight_with_edgeEffect[2]) +
+                                 (xtalk_ld * weight_with_edgeEffect[3]) +
+                                 (xtalk_ru * weight_with_edgeEffect[4]) +
+                                 (xtalk_rd * weight_with_edgeEffect[5]))
+                    if edgeTSVFlag is True:
+                        xtalk_sum_float = xtalk_sum_float + edgeTSVPunishment
 
-                    xtalk_sum = xtalk_left + xtalk_right + xtalk_lu + xtalk_ld + xtalk_ru + xtalk_rd
+
+                    xtalk_sum = (math.ceil(xtalk_sum_float * 4)) / 4
+
                     row_xtalk_list.append(xtalk_sum)
                     assert len(row_xtalk_list) == idx_col + 1
 
@@ -525,6 +584,14 @@ class Array_Xtalk_Calculator:
                      9.5 : 0,
                      9.75 : 0,
                      10 : 0,
+                     10.25 : 0,
+                     10.5 : 0,
+                     10.75 : 0,
+                     11 : 0,
+                     11.25 : 0,
+                     11.5 : 0,
+                     11.75 : 0,
+                     12 : 0,
                      'None' : 0}
         for tuple_ii in cw_xtalk_tuple:
             for level_ii in tuple_ii:
@@ -538,7 +605,9 @@ class Array_Xtalk_Calculator:
                                 7, 7.25, 7.5, 7.75,
                                 8, 8.25, 8.5, 8.75,
                                 9, 9.25, 9.5, 9.75,
-                                10):
+                                10, 10.25, 10.5, 10.75,
+                                11, 11.25, 11.5, 11.75,
+                                12):
                     cnt_xtalk[level_ii] = cnt_xtalk[level_ii] + 1
                 else:
                     assert level_ii is None
