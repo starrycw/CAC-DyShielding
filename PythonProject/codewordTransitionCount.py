@@ -2,7 +2,9 @@ import copy
 import random
 
 import RingCAC_Alg.Ring2CTransCAC_Codec
+import OtherCAC_Alg.IFNSCAC_Codec
 import OtherCAC_Alg.FNSCAC_Codec
+
 
 ################################################################################
 def transBit_count(cw_1, cw_2):
@@ -56,6 +58,76 @@ def runSimu_FNSFPF(cw_len, n_cycle):
 
     return cnt_trans_all, cnt_rise_all, cnt_fall_all, max_nTrans_oneCycle, max_nRise_oneCycle, max_nFall_oneCycle
 
+
+################################################################################
+def runSimu_FNSFTF(cw_len, n_cycle):
+    '''
+
+    :param cw_len:
+    :param n_cycle:
+    :return:
+    '''
+    Codec_instance = OtherCAC_Alg.FNSCAC_Codec.FNSCAC_Codec(n_cw=cw_len)
+    maxInput = Codec_instance.getParam_maxInputValue()
+    cnt_trans_all = 0
+    cnt_rise_all = 0
+    cnt_fall_all = 0
+    max_nTrans_oneCycle = 0
+    max_nRise_oneCycle = 0
+    max_nFall_oneCycle = 0
+    cw_1 = cw_len * (0,)
+    for i in range(0, n_cycle):
+        value_random = random.randint(0, maxInput)
+        cw_2 = Codec_instance.encode_FNSFTF(value=value_random)
+        cnt_trans, cnt_rise, cnt_fall = transBit_count(cw_1=cw_1, cw_2=cw_2)
+        cnt_trans_all = cnt_trans_all + cnt_trans
+        cnt_rise_all = cnt_rise_all + cnt_rise
+        cnt_fall_all = cnt_fall_all + cnt_fall
+        if max_nTrans_oneCycle < cnt_trans:
+            max_nTrans_oneCycle = cnt_trans
+        if max_nRise_oneCycle < cnt_rise:
+            max_nRise_oneCycle = cnt_rise
+        if max_nFall_oneCycle < cnt_fall:
+            max_nFall_oneCycle = cnt_fall
+        cw_1 = copy.deepcopy(cw_2)
+
+    return cnt_trans_all, cnt_rise_all, cnt_fall_all, max_nTrans_oneCycle, max_nRise_oneCycle, max_nFall_oneCycle
+
+
+################################################################################
+def runSimu_IFNS(cw_len, n_cycle):
+    '''
+
+    :param cw_len:
+    :param n_cycle:
+    :return:
+    '''
+    Codec_instance = OtherCAC_Alg.IFNSCAC_Codec.IFNSCAC_Codec(n_cw=cw_len)
+    maxInput = Codec_instance.getParam_maxInputValue()
+    cnt_trans_all = 0
+    cnt_rise_all = 0
+    cnt_fall_all = 0
+    max_nTrans_oneCycle = 0
+    max_nRise_oneCycle = 0
+    max_nFall_oneCycle = 0
+    cw_1 = cw_len * (0,)
+    for i in range(0, n_cycle):
+        value_random = random.randint(0, maxInput)
+        cw_2 = Codec_instance.encode_IFNS(value=value_random)
+        cnt_trans, cnt_rise, cnt_fall = transBit_count(cw_1=cw_1, cw_2=cw_2)
+        cnt_trans_all = cnt_trans_all + cnt_trans
+        cnt_rise_all = cnt_rise_all + cnt_rise
+        cnt_fall_all = cnt_fall_all + cnt_fall
+        if max_nTrans_oneCycle < cnt_trans:
+            max_nTrans_oneCycle = cnt_trans
+        if max_nRise_oneCycle < cnt_rise:
+            max_nRise_oneCycle = cnt_rise
+        if max_nFall_oneCycle < cnt_fall:
+            max_nFall_oneCycle = cnt_fall
+        cw_1 = copy.deepcopy(cw_2)
+
+    return cnt_trans_all, cnt_rise_all, cnt_fall_all, max_nTrans_oneCycle, max_nRise_oneCycle, max_nFall_oneCycle
+
 ################################################################################
 def runSimu_FNSCATF(cw_len, n_cycle):
     '''
@@ -64,7 +136,7 @@ def runSimu_FNSCATF(cw_len, n_cycle):
     :param n_cycle:
     :return:
     '''
-    Codec_instance = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSBased(len_cw=cw_len)
+    Codec_instance = RingCAC_Alg.Ring2CTransCAC_Codec.Codec_Ring2CTransCAC_FNSCATF(len_cw=cw_len)
     maxInput = Codec_instance.getParam_maxInputLimitation()
     cnt_trans_all = 0
     cnt_rise_all = 0
@@ -100,12 +172,28 @@ def runSimu_FNSCATF(cw_len, n_cycle):
 ###################################################################################
 ###################################################################################
 # MAIN
+n_cycle = 10000000
+for cw_len in range(4, 10):
+    print("\n---------------------------------------------------------------------------------------------------------------")
+    print("Codeword Transition Count - BitWidth={}, Cycle={}".format(cw_len, n_cycle))
+    # print("--- FNSFPF...")
+    simuResult_FNSFPF = runSimu_FNSFPF(cw_len = cw_len, n_cycle = n_cycle)
+    print("--- FNSFPF OK!")
+    # print("--- FNSFTF...")
+    simuResult_FNSFTF = runSimu_FNSFTF(cw_len = cw_len, n_cycle = n_cycle)
+    print("--- FNSFTF OK!")
+    # print("--- IFNS...")
+    simuResult_IFNS = runSimu_IFNS(cw_len = cw_len, n_cycle = n_cycle)
+    print("--- IFNS OK!")
+    # print("--- FNSCACTF...")
+    simuResult_FNSCATF = runSimu_FNSCATF(cw_len = cw_len, n_cycle = n_cycle)
+    print("--- FNSCATF OK!")
+    print("---------------------------------------------------------------------------------------------------------------")
+    print("[Name]: ([cnt_trans_all], [cnt_rise_all], [cnt_fall_all], [max_nTrans_oneCycle], [max_nRise_oneCycle], [max_nFall_oneCycle])")
+    print("---------------------------------------------------------------------------------------------------------------")
 
-n_cycle = 1000000
-cw_len = 15
-simuResult_FNSFPF = runSimu_FNSFPF(cw_len = cw_len, n_cycle = n_cycle)
-simuResult_FNSCATF = runSimu_FNSCATF(cw_len = cw_len, n_cycle = n_cycle)
-
-print("FNS-FPF: {}".format(simuResult_FNSFPF))
-print("FNS-CATF: {}".format(simuResult_FNSCATF))
+    print("FNS-FPF: {}".format(simuResult_FNSFPF))
+    print("FNS-FTF: {}".format(simuResult_FNSFTF))
+    print("FNS-IFNS: {}".format(simuResult_IFNS))
+    print("FNS-CATF: {}".format(simuResult_FNSCATF))
 
