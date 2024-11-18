@@ -637,6 +637,11 @@ class BSCAC_ForHexDyS2C_2CSupFor7bitGroup_parallelDataIn(BSCAC_ForHexDyS2C_2CSup
     Changes:
         Improved codec algorithms:  In the case that d0 has a transition in [t-1]->[t], the bit that are not free bit but has at least one adjacent free bit now has a chance to transmit data bit.
 
+    来自2024.10.30的注释-留给未来的提醒：
+      该算法其实是对应了verilog设计的。过了好久时间，已经对该代码没什么印象了，所以再次看该算法，会觉得case2部分的逻辑似乎与verilog算法不对应。
+      但是，再仔细想想，其实是对应的！不要用设计电路的思维看待该代码！
+      下次想要做出改动的时候要慎重！
+
     '''
     def __init__(self, instance_id=None):
         super().__init__(instance_id)
