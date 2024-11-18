@@ -767,6 +767,151 @@ class _Z3Solver_forMuACalc_Simplfied_useMatrixCQ(_Z3Solver_forMuACalc_Simplfied_
 
 
 
+########################################################################################################################
+### class _Z3Solver_forMuACalc_Simplfied_useMatrixCQ <-- (_Z3Solver_forMuACalc_Simplfied_useMatrixBQ)
+########################################################################################################################
+###
+###
+###
+########################################################################################################################
+class _Z3Solver_forMuACalc_Simplfied_useMatrixCQ_ver20241118(_Z3Solver_forMuACalc_Simplfied_useMatrixBQ):
+    '''
+    Z3 Solver for matrix \mu_a calculation & code rate analyze.
+    A simplified version:
+    (1) Use 'Real' variables to represent the probability, rather than 'Int' / 'Int'.
+    (2) Use Matrix CQ to replace Matrix B & Matrix Q. Matrix C assumes three pairs of bits are independent of each other.
+
+    Changelog: 20241118-
+    '''
+    def __init__(self, matrix_C_b16, matrix_C_b32, matrix_C_b54, matrix_Q):
+        assert len(matrix_C_b16) == 64
+        assert len(matrix_C_b32) == 64
+        assert len(matrix_C_b54) == 64
+        assert len(matrix_Q) == 64
+        for idx_ii in range(0, 64):
+            assert len(matrix_C_b16[idx_ii]) == 64
+            assert len(matrix_C_b32[idx_ii]) == 64
+            assert len(matrix_C_b54[idx_ii]) == 64
+            assert len(matrix_Q) == 64
+            for idx_kk in range(0, 64):
+                assert isinstance(matrix_Q[idx_ii][idx_kk], int)
+                assert matrix_Q[idx_ii][idx_kk] >= 0
+                assert matrix_C_b16[idx_ii][idx_kk] in (0, 1)
+                assert matrix_C_b32[idx_ii][idx_kk] in (0, 1)
+                assert matrix_C_b54[idx_ii][idx_kk] in (0, 1)
+
+        self._matrix_C_b16 = copy.deepcopy(matrix_C_b16)
+        self._matrix_C_b32 = copy.deepcopy(matrix_C_b32)
+        self._matrix_C_b54 = copy.deepcopy(matrix_C_b54)
+        self._matrix_Q = copy.deepcopy(matrix_Q)
+
+
+
+
+        # Z3 solver
+        self._solver_main = z3.Solver()
+
+        # var \mu_a
+        # Each element in \mu_a is represented by a Real var.
+        self._var_muA_List = z3.RealVector('muA', 64)
+
+        # var \mu_b
+        self._var_muB_List = z3.RealVector('muB', 64)
+
+    ####################################################################################################################
+    def get_MatrixC_b16(self):
+        return copy.deepcopy(self._matrix_C_b16)
+
+    ####################################################################################################################
+    def get_MatrixC_b32(self):
+        return copy.deepcopy(self._matrix_C_b32)
+
+    ####################################################################################################################
+    def get_MatrixC_b54(self):
+        return copy.deepcopy(self._matrix_C_b54)
+
+    ####################################################################################################################
+    def get_MatrixQ(self):
+        return copy.deepcopy(self._matrix_Q)
+
+    ####################################################################################################################
+    def get_matrixBQ(self):
+        assert False
+
+    ####################################################################################################################
+    def _addConstraint_muAmatrixBQmuA(self):
+        assert False
+
+    ####################################################################################################################
+    def _addConstraint_muA2muB(self):
+        '''
+        Add Constraint:
+        \mu_a --> \mu_b.
+        :return:
+        '''
+        for idx_i in range(0, 64):
+            self._solver_main.add(
+                ( (z3.Sum( [(self._var_muA_List[idx_ka] * self.get_MatrixC_b16()[idx_ka][idx_i]) for idx_ka in range(0, 64)] ))
+                * (z3.Sum( [(self._var_muA_List[idx_kb] * self.get_MatrixC_b32()[idx_kb][idx_i]) for idx_kb in range(0, 64)] ))
+                * (z3.Sum( [(self._var_muA_List[idx_kc] * self.get_MatrixC_b54()[idx_kc][idx_i]) for idx_kc in range(0, 64)] )) )
+                == self._var_muB_List[idx_i]
+            )
+
+    ####################################################################################################################
+    def _addConstraint_muBmatrixQmuA(self):
+        '''
+        Add Constraint:
+        \mu_b times matrix Q = \mu_a
+        :return:
+        '''
+        for idx_i in range(0, 64):
+            self._solver_main.add(
+                z3.Sum( [(self._var_muB_List[idx_k] * self.get_MatrixQ()[idx_k][idx_i]) for idx_k in range(0, 64)] )
+                == (self._var_muA_List[idx_i] * 256)
+            )
+
+    ####################################################################################################################
+    def addConstraint_basic(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muA2muB()
+        print("Z3Solver: Constraint added - \mu_a --> \mu_b")
+
+        # \mu_b times matrix Q = \mu_a
+        self._addConstraint_muBmatrixQmuA()
+        print("Z3Solver: Constraint added - \mu_b times matrix Q = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
+    ####################################################################################################################
+    def addConstraint_full(self):
+
+        # \mu_a x BQ = \mu_a
+        self._addConstraint_muA2muB()
+        print("Z3Solver: Constraint added - \mu_a --> \mu_b")
+
+        # \mu_b times matrix Q = \mu_a
+        self._addConstraint_muBmatrixQmuA()
+        print("Z3Solver: Constraint added - \mu_b times matrix Q = \mu_a")
+
+        # SUM(\mu_a) = 1
+        self._addConstraint_muASUM()
+        print("Z3Solver: Constraint added - SUM(\mu_a) = 1")
+
+        # \mu_a[i] = \mu_a[63-i]
+        self._addConstraint_muASymmetry()
+        print("Z3Solver: Constraint added - \mu_a[i] = \mu_a[63-i]")
+
+        # Others
+        self._addConstraint_others()
+        print("Z3Solver: Constraint added - Others")
+
 
 
 
