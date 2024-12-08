@@ -1,0 +1,6 @@
+# File Created by  at Tue Dec  3 00:50:17 2024
+# assisted by CdsLibEditor
+SOFTINCLUDE /eda/cadence/IC617/share/cdssetup/cds.lib
+DEFINE TransitionSimu_MISModel ./TransitionSimu_MISModel
+DEFINE TransitionSimu_RCDelayModel2013 ./TransitionSimu_RCDelayModel2013
+DEFINE tsmcN65 TSMC-65nm(OA)/PDK_files/tsmcN65

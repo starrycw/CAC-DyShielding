@@ -1,0 +1,51 @@
+\o Program:		@(#)$CDS: cdsLibEditor version 6.1.7 - CAT35 10/18/2015 00:07 (sjfnl678) $
+\o Sub version:		sub-version  p009 
+\o Arguments:		-display :35 -mpssession virtuoso290644 -mpshost server315 -namespace CDBA -cdslib /eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412/cds.lib 
+\o Working Directory:	server315:/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412
+\o 64-bit offsets
+\a nrSetWindowVisibility(cdsLibEditor "show")
+\o Qt version: 		4.8.5
+\a nrSetCurrentWindow(cdsLibEditor)
+\a nrListItemAction(cdsLibEditor->mainTable 0 0)
+\o Active cell: 0 0 "cdsDefTechLib"
+\a nrResizeWindow(cdsLibEditor list(28 58 500 400))
+\a nrResizeWindow(cdsLibEditor list(-10 20 1920 977))
+\a cdsLibEditor->editAddLibButton->value = t
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412"
+\a newLibraryDialog->useMappedName->value = nil
+\a nrSetWindowVisibility(newLibraryDialog "show")
+\a nrSetCurrentWindow(newLibraryDialog)
+\a nrResizeWindow(newLibraryDialog list(667 259 567 513))
+\a newLibraryDialog->dirListWidget->value = ".."
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412/.."
+\a nrListItemAction(newLibraryDialog->dirListWidget 0 0)
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF"
+\a newLibraryDialog->dirListWidget->value = nil
+\a newLibraryDialog->dirListWidget->value = ".."
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/.."
+\a newLibraryDialog->dirListWidget->value = "TSV_Transition_202304_202412"
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412"
+\a nrListItemAction(newLibraryDialog->dirListWidget 2 0)
+\a newLibraryDialog->dirListWidget->value = nil
+\a newLibraryDialog->dirListWidget->value = "TSMC-65nm(OA)"
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412/TSMC-65nm(OA)"
+\a nrListItemAction(newLibraryDialog->dirListWidget 1 0)
+\a newLibraryDialog->dirListWidget->value = nil
+\a newLibraryDialog->dirListWidget->value = "PDK_files"
+\a newLibraryDialog->filePathComboBox->value = "/eda/home/cwei/Workspace/Virtuoso_Workspace/CAC/FNS_CATF/TSV_Transition_202304_202412/TSMC-65nm(OA)/PDK_files"
+\a nrListItemAction(newLibraryDialog->dirListWidget 2 0)
+\a newLibraryDialog->dirListWidget->value = nil
+\a newLibraryDialog->libraryListBox->value = "tsmcN65"
+\a newLibraryDialog->useMappedName->value = t
+\a newLibraryDialog->libraryName->value = "tsmcN65"
+\a newLibraryDialog->okButton->value = t
+\a newLibraryDialog->libraryListBox->value = nil
+\a newLibraryDialog->useMappedName->value = nil
+\a newLibraryDialog->libraryName->value = ""
+\a nrListItemAction(cdsLibEditor->mainTable 11 0)
+\o Active cell: 11 0 ""
+\a nrSetCurrentWindow(cdsLibEditor)
+\a cdsLibEditor->fileSaveButton->value = t
+\a cdsLibEditor->fileExitButton->value = t
+\a nrSetWindowVisibility(cdsLibEditor "hide")
+\a exit(0)

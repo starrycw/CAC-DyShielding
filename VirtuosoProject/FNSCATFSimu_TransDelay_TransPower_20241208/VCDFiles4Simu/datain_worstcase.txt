@@ -1,0 +1,15 @@
+.alias *[*] *<*>
+
+.alias VCDGen_Hex8x8Trans_ForFNSCATFPaper_WorstCase.data_in* data_in*
+
+.tfall 50p
+
+.trise 50p
+
+.vih 1.2
+
+.vil 0
+
+.scope VCDGen_Hex8x8Trans_ForFNSCATFPaper_WorstCase
+
+.in data_in[63:0]
