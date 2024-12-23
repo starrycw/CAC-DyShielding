@@ -1561,6 +1561,8 @@ class BitStuffingCAC_Simulation_HexArray:
             self._createHexArray_regularA_18x9()
         elif arrayType == 'Hex_RegularA_18x12':
             self._createHexArray_regularA_18x12()
+            self._arrayParam_nRow = 12
+            self._arrayParam_nCol = 9
         elif arrayType == 'HexArrayAuto_regularA_6m_x_3n':
             assert isinstance(additionParamsTuple, tuple)
             assert len(additionParamsTuple) == 2
@@ -1588,6 +1590,14 @@ class BitStuffingCAC_Simulation_HexArray:
     def _initialize_codec(self):
         timestamp_int = int(time.time())
         self._codecInstance_BSCAC_7bit = BitStuffingCAC_Codec.BSCAC_ForHexDyS2C_2CSupFor7bitGroup_Main(instance_id=copy.deepcopy(timestamp_int))
+
+    ####################################################################################################################
+    def get_arrayParam_nRow(self):
+        return copy.deepcopy(self._arrayParam_nRow)
+
+    ####################################################################################################################
+    def get_arrayParam_nCol(self):
+        return copy.deepcopy(self._arrayParam_nCol)
 
     ####################################################################################################################
     def get_dyShieldingType1_topoTuple(self):
@@ -1660,6 +1670,66 @@ class BitStuffingCAC_Simulation_HexArray:
         :return:
         '''
         return copy.deepcopy(self._arrayTopo_nDySh3_notVirtual)
+
+    ####################################################################################################################
+    def codewordsRemapping_getArrayState(self, unmappedState_stsvs, unmappedState_dysh1, unmappedState_dysh2, unmappedState_dysh3):
+        assert isinstance(self._topoTuple_TSVMapping_forXtalkSimu_ROWbyROW, tuple)
+        assert isinstance(self._topoTuple_dyShieldingType1, tuple)
+        assert isinstance(self._topoTuple_dyShieldingType2, tuple)
+        assert isinstance(self._topoTuple_dyShieldingType3, tuple)
+        assert isinstance(unmappedState_stsvs, tuple)
+        assert isinstance(unmappedState_dysh1, tuple)
+        assert isinstance(unmappedState_dysh2, tuple)
+        assert isinstance(unmappedState_dysh3, tuple)
+        assert len(unmappedState_stsvs) == len(self.get_signalBits_initState())
+        assert len(unmappedState_dysh1) == len(self.get_dyShieldingType1_initState())
+        assert len(unmappedState_dysh2) == len(self.get_dyShieldingType2_initState())
+        assert len(unmappedState_dysh3) == len(self.get_dyShieldingType3_initState())
+
+        codewordMappingRule_ROWbyROW = self.get_topoTuple_TSVMapping_forXtalkEval_ROWbyROW()
+
+        mapped_arrayState_list = []
+
+        for row_i in range(0, self.get_arrayParam_nRow()):
+            mapped_rowState_list = []
+            for col_j in range(0, self.get_arrayParam_nCol()):
+                if codewordMappingRule_ROWbyROW[row_i][col_j] == 0: # STSV
+                    bit_state = copy.deepcopy(unmappedState_stsvs[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                    assert bit_state in (0, 1)
+                    mapped_rowState_list.append(copy.deepcopy(bit_state))
+
+                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 1: # DYSH1
+                    bit_state = copy.deepcopy(unmappedState_dysh1[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                    assert bit_state in (0, 1)
+                    mapped_rowState_list.append(copy.deepcopy(bit_state))
+
+                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 2: # DYSH2
+                    bit_state = copy.deepcopy(unmappedState_dysh2[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                    assert bit_state in (0, 1)
+                    mapped_rowState_list.append(copy.deepcopy(bit_state))
+
+                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 3: # DYSH3
+                    bit_state = copy.deepcopy(unmappedState_dysh3[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                    assert bit_state in (0, 1)
+                    mapped_rowState_list.append(copy.deepcopy(bit_state))
+
+                else:
+                    assert False
+
+            assert len(mapped_rowState_list) == self.get_arrayParam_nCol()
+            mapped_rowState_tuple = tuple(mapped_rowState_list)
+            mapped_arrayState_list.append(copy.deepcopy(mapped_rowState_tuple))
+
+        assert len(mapped_arrayState_list) == self.get_arrayParam_nRow()
+        mapped_arrayState_tuple = tuple(mapped_arrayState_list)
+
+        return mapped_arrayState_tuple
+
+
+
+
+
+
 
     ####################################################################################################################
     def updateState_dyShieldingType1(self, newState_list):

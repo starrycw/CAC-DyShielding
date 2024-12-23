@@ -2,6 +2,7 @@ import copy
 import z3 as z3
 
 import RingCAC_Alg.BitStuffingCAC_Analyze as BitStuffingCAC_Analyze
+import Evaluation_Tools.array_xtalk_simu as array_xtalk_simu
 
 ########################################################################################################################
 ########################################################################################################################
@@ -344,10 +345,25 @@ def simulation_codingRateSimu_HexArrayRegularA_6mx3n(m, n, n_cycleRun):
 
 ########################################################################################################################
 ########################################################################################################################
-def simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000):
+def simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000, edgeTSVXtalkZoom = 1, edgeTSVPunishment = 0):
+    '''
+
+    :param n_cycleRun: int
+    :param edgeTSVXtalkZoom: int，默认为1。边缘TSV之间的串扰级别将乘以该数值。
+    :param edgeTSVPunishment: int, 默认为0.该数值将被加到每个边缘TSV的串扰级别中。
+    :return:
+    '''
+    assert edgeTSVPunishment >= 0
+    assert edgeTSVXtalkZoom >= 1
     # n_cycleRun = 100000
-    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
+    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_18x12")
+    XtalkCalculator_instance01 = array_xtalk_simu.Array_Xtalk_Calculator(n_row=12, n_col=9)
     # cnt_nSignalBitsTrans = 0
+    TSVMapping_tuple = BSCACSimu_instance01.get_topoTuple_TSVMapping_forXtalkEval_ROWbyROW()
+
+
+
+    ######Simulation Start
     for cycle_i in range(0, n_cycleRun):
         print('Cycle-{}'.format(cycle_i))
         data2bTrans_3Clk, flagsBool_ifSignalBitTrans_3Clk, nTransmitted_signalBits, signalBitsState_3Clk, dysh1State_3Clk, dysh2State_3Clk, dysh3State_3Clk = BSCACSimu_instance01.runSimu_threeClk(dataGenMethod='random')
