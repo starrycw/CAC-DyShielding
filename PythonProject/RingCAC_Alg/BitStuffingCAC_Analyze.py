@@ -1744,6 +1744,10 @@ class BitStuffingCAC_Simulation_HexArray:
         return copy.deepcopy(self._stateList_signalBits_current)
 
     ####################################################################################################################
+    def get_topoTuple_TSVMapping_forXtalkEval_ROWbyROW(self):
+        return copy.deepcopy(self._topoTuple_TSVMapping_forXtalkSimu_ROWbyROW)
+
+    ####################################################################################################################
     def updateState_signalBits(self, newState_list):
         '''
         Update the state of the signal bits.
@@ -1935,6 +1939,8 @@ class BitStuffingCAC_Simulation_HexArray:
                                             (12, None, None, None, 16, 13),
                                             (14, 17, None, None, None, 15))
         self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 6, 9)
+
+
 
     ####################################################################################################################
     def _createHexArray_regularA_12x6(self):
@@ -2361,6 +2367,23 @@ class BitStuffingCAC_Simulation_HexArray:
                                             (62, 67, None, None, 68, 63),
                                             (64, 69, None, None, 70, 65))
         self._unconstraintBitsTuple_dyShieldingType3 = (0, 1, 2, 3, 4, 5, 12, 35, 48, 71)
+
+        # TSV Mapping for Xtalk Simu
+        # For each element (a, b):
+        #   int a represents the TSV type: 0-signal, 1-DYSH1, 2-DYSH2, 3-DYSH3.
+        #   int b represent the idx od TSV.
+        self._topoTuple_TSVMapping_forXtalkSimu_ROWbyROW = (( (0, 0), (0, 1), (2, 0), (0, 2), (0, 3), (2, 1), (0, 4), (0, 5), (2, 2) ),
+                                                            ( (1, 0), (0, 6), (0, 7), (1, 1), (0, 8), (0, 9), (1, 2), (0,10), (0,11) ),
+                                                            ( (0,12), (0,13), (3, 0), (0,14), (0,15), (3, 1), (0,16), (0,17), (3, 2) ),
+                                                            ( (2, 3), (0,18), (0,19), (2, 4), (0,20), (0,21), (2, 5), (0,22), (0,23) ),
+                                                            ( (0,24), (0,25), (1, 3), (0,26), (0,27), (1, 4), (0,28), (0,29), (1, 5) ),
+                                                            ( (3, 3), (0,30), (0,31), (3, 4), (0,32), (0,33), (3, 5), (0,34), (0,35) ),
+                                                            ( (0,36), (0,37), (2, 6), (0,38), (0,39), (2, 7), (0,40), (0,41), (2, 8) ),
+                                                            ( (1, 6), (0,42), (0,43), (1, 7), (0,44), (0,45), (1, 8), (0,46), (0,47) ),
+                                                            ( (0,48), (0,49), (3, 6), (0,50), (0,51), (3, 7), (0,52), (0,53), (3, 8) ),
+                                                            ( (2, 9), (0,54), (0,55), (2,10), (0,56), (0,57), (2,11), (0,58), (0,59) ),
+                                                            ( (0,60), (0,61), (1, 9), (0,62), (0,63), (1,10), (0,64), (0,65), (1,11) ),
+                                                            ( (3, 9), (0,66), (0,67), (3,10), (0,68), (0,69), (3,11), (0,70), (0,71) ))
 
     ####################################################################################################################
     def _createHexArrayAuto_regularA_6m_x_3n(self, m, n):

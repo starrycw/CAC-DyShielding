@@ -344,6 +344,40 @@ def simulation_codingRateSimu_HexArrayRegularA_6mx3n(m, n, n_cycleRun):
 
 ########################################################################################################################
 ########################################################################################################################
+def simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000):
+    # n_cycleRun = 100000
+    BSCACSimu_instance01 = BitStuffingCAC_Analyze.BitStuffingCAC_Simulation_HexArray(arrayType="Hex_RegularA_13x9")
+    # cnt_nSignalBitsTrans = 0
+    for cycle_i in range(0, n_cycleRun):
+        print('Cycle-{}'.format(cycle_i))
+        data2bTrans_3Clk, flagsBool_ifSignalBitTrans_3Clk, nTransmitted_signalBits, signalBitsState_3Clk, dysh1State_3Clk, dysh2State_3Clk, dysh3State_3Clk = BSCACSimu_instance01.runSimu_threeClk(dataGenMethod='random')
+        # cnt_nSignalBitsTrans = cnt_nSignalBitsTrans + nTransmitted_signalBits
+        # print('-flagsBool_ifSignalBitTrans_3Clk: {}'.format(flagsBool_ifSignalBitTrans_3Clk))
+        # print('-nTransmitted_signalBits: {}'.format(signalBitsState_3Clk))
+        print('-signalBitsState_3Clk: {}'.format(signalBitsState_3Clk))
+        print('-dysh1State_3Clk: {}'.format(dysh1State_3Clk))
+        print('-dysh2State_3Clk: {}'.format(dysh2State_3Clk))
+        print('-dysh3State_3Clk: {}'.format(dysh3State_3Clk))
+        print('#########################################################################################################')
+
+    # print('cnt_nSignalBitsTrans = {}'.format(cnt_nSignalBitsTrans))
+    # nTSV_signal = len(BSCACSimu_instance01.get_signalBits_currentState())
+    # nTSV_dysh1 = BSCACSimu_instance01.get_nDyShType1_notVirtual()
+    # nTSV_dysh2 = BSCACSimu_instance01.get_nDyShType2_notVirtual()
+    # nTSV_dysh3 = BSCACSimu_instance01.get_nDyShType3_notVirtual()
+    # nTSV_dyshAll = nTSV_dysh1 + nTSV_dysh2 + nTSV_dysh3
+    # nTSV_all = nTSV_signal + nTSV_dyshAll
+    # bitOHCalc_nAll = nTSV_all * n_cycleRun * 3
+    # bitOHCalc_nRedundant = bitOHCalc_nAll - (nTSV_dyshAll * n_cycleRun) - cnt_nSignalBitsTrans
+    # bitOHCalc_OH = bitOHCalc_nRedundant / (bitOHCalc_nAll - bitOHCalc_nRedundant)
+    # print('signal bits coding rate: {} / {} = {}'.format(cnt_nSignalBitsTrans, (nTSV_signal * 3 * n_cycleRun), (cnt_nSignalBitsTrans / (nTSV_signal * 3 * n_cycleRun))))
+    # print("nTSV_all = {}, nTSV_dysh = ({}, {}, {}), nTSV_signal = {}, Cycle = {}, Bit Overhead = {} / {} = {}".format(nTSV_all, nTSV_dysh1, nTSV_dysh2, nTSV_dysh3, nTSV_signal, n_cycleRun, bitOHCalc_nRedundant, (bitOHCalc_nAll - bitOHCalc_nRedundant), bitOHCalc_OH))
+
+########################################################################################################################
+########################################################################################################################
+
+########################################################################################################################
+########################################################################################################################
 # Get the sum of the number of transmitted bits in each case: old_state = listIdx, dataIn = All 0 ~ All 1;
 # And then calculate the min / average / max bit overhead.
 def calcNumberOfTransBitsOfSingle7bitGroup():
@@ -380,4 +414,4 @@ def calcNumberOfTransBitsOfSingle7bitGroup():
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
-
+simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000)
