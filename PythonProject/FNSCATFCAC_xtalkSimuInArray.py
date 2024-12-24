@@ -165,6 +165,32 @@ class FNSCATF_xtalkSimu:
 
         return codes_tuple
 
+    def genCodes_FNSFPF_12bitx9(self, value_tuple):
+        # assert isinstance(lastStates_tuple, tuple)
+        assert isinstance(value_tuple, tuple)
+        # assert len(lastStates_tuple) == 16
+        assert len(value_tuple) == 12
+
+        FNSCodec_instance01 = OtherCAC_Alg.FNSCAC_Codec.FNSCAC_Codec(n_cw=9)
+
+        decValue_upperBound = FNSCodec_instance01.getParam_maxInputValue()
+        codes_list = []
+
+        for idx_aa in range(0, 12):
+            assert value_tuple[idx_aa] <= decValue_upperBound
+            assert value_tuple[idx_aa] >= 0
+            # assert len(lastStates_tuple[idx_aa]) == 8
+            # code_gen = FNSCATFCodec_instance01.encoder_top(decValue_int=copy.deepcopy(value_tuple[idx_aa]), lastState_tuple=copy.deepcopy(lastStates_tuple[idx_aa]))
+            code_gen = FNSCodec_instance01.encode_FNSFPF(value=copy.deepcopy(value_tuple[idx_aa]), codewordType='int')
+            codes_list.append(copy.deepcopy(code_gen))
+
+            decodeResult = FNSCodec_instance01.decoder_FNS(codeword_tuple=copy.deepcopy(code_gen), codewordType='int')
+            assert decodeResult == value_tuple[idx_aa]
+
+        codes_tuple = tuple(copy.deepcopy(codes_list))
+
+        return codes_tuple
+
     def genCodes_FNSFTF_16bitx16(self, value_tuple):
         # assert isinstance(lastStates_tuple, tuple)
         assert isinstance(value_tuple, tuple)
@@ -190,6 +216,33 @@ class FNSCATF_xtalkSimu:
         codes_tuple = tuple(copy.deepcopy(codes_list))
 
         return codes_tuple
+
+    def genCodes_FNSFTF_12bitx9(self, value_tuple):
+        # assert isinstance(lastStates_tuple, tuple)
+        assert isinstance(value_tuple, tuple)
+        # assert len(lastStates_tuple) == 16
+        assert len(value_tuple) == 12
+
+        FNSCodec_instance01 = OtherCAC_Alg.FNSCAC_Codec.FNSCAC_Codec(n_cw=9)
+
+        decValue_upperBound = FNSCodec_instance01.getParam_maxInputValue()
+        codes_list = []
+
+        for idx_aa in range(0, 12):
+            assert value_tuple[idx_aa] <= decValue_upperBound
+            assert value_tuple[idx_aa] >= 0
+            # assert len(lastStates_tuple[idx_aa]) == 8
+            # code_gen = FNSCATFCodec_instance01.encoder_top(decValue_int=copy.deepcopy(value_tuple[idx_aa]), lastState_tuple=copy.deepcopy(lastStates_tuple[idx_aa]))
+            code_gen = FNSCodec_instance01.encode_FNSFTF(value=copy.deepcopy(value_tuple[idx_aa]), codewordType='int')
+            codes_list.append(copy.deepcopy(code_gen))
+
+            decodeResult = FNSCodec_instance01.decoder_FNS(codeword_tuple=copy.deepcopy(code_gen), codewordType='int')
+            assert decodeResult == value_tuple[idx_aa]
+
+        codes_tuple = tuple(copy.deepcopy(codes_list))
+
+        return codes_tuple
+
 
     def genCodes_IFNSFPF_16bitx16(self, value_tuple):
         # assert isinstance(lastStates_tuple, tuple)

@@ -1625,27 +1625,27 @@ class BitStuffingCAC_Simulation_HexArray:
 
     ####################################################################################################################
     def get_dyShieldingType1_initState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType1_init)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType1_init))
 
     ####################################################################################################################
     def get_dyShieldingType2_initState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType2_init)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType2_init))
 
     ####################################################################################################################
     def get_dyShieldingType3_initState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType3_init)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType3_init))
 
     ####################################################################################################################
     def get_dyShieldingType1_currentState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType1_current)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType1_current))
 
     ####################################################################################################################
     def get_dyShieldingType2_currentState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType2_current)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType2_current))
 
     ####################################################################################################################
     def get_dyShieldingType3_currentState(self):
-        return copy.deepcopy(self._stateList_dyShieldingType3_current)
+        return copy.deepcopy(tuple(self._stateList_dyShieldingType3_current))
 
     ####################################################################################################################
     def get_nDyShType1_notVirtual(self):
@@ -1693,27 +1693,28 @@ class BitStuffingCAC_Simulation_HexArray:
         for row_i in range(0, self.get_arrayParam_nRow()):
             mapped_rowState_list = []
             for col_j in range(0, self.get_arrayParam_nCol()):
-                if codewordMappingRule_ROWbyROW[row_i][col_j] == 0: # STSV
-                    bit_state = copy.deepcopy(unmappedState_stsvs[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                if codewordMappingRule_ROWbyROW[row_i][col_j][0] == 0: # STSV
+                    bit_state = copy.deepcopy(unmappedState_stsvs[codewordMappingRule_ROWbyROW[row_i][col_j][1]])
                     assert bit_state in (0, 1)
                     mapped_rowState_list.append(copy.deepcopy(bit_state))
 
-                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 1: # DYSH1
-                    bit_state = copy.deepcopy(unmappedState_dysh1[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                elif codewordMappingRule_ROWbyROW[row_i][col_j][0] == 1: # DYSH1
+                    bit_state = copy.deepcopy(unmappedState_dysh1[codewordMappingRule_ROWbyROW[row_i][col_j][1]])
                     assert bit_state in (0, 1)
                     mapped_rowState_list.append(copy.deepcopy(bit_state))
 
-                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 2: # DYSH2
-                    bit_state = copy.deepcopy(unmappedState_dysh2[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                elif codewordMappingRule_ROWbyROW[row_i][col_j][0] == 2: # DYSH2
+                    bit_state = copy.deepcopy(unmappedState_dysh2[codewordMappingRule_ROWbyROW[row_i][col_j][1]])
                     assert bit_state in (0, 1)
                     mapped_rowState_list.append(copy.deepcopy(bit_state))
 
-                elif codewordMappingRule_ROWbyROW[row_i][col_j] == 3: # DYSH3
-                    bit_state = copy.deepcopy(unmappedState_dysh3[codewordMappingRule_ROWbyROW[row_i][col_j]])
+                elif codewordMappingRule_ROWbyROW[row_i][col_j][0] == 3: # DYSH3
+                    bit_state = copy.deepcopy(unmappedState_dysh3[codewordMappingRule_ROWbyROW[row_i][col_j][1]])
                     assert bit_state in (0, 1)
                     mapped_rowState_list.append(copy.deepcopy(bit_state))
 
                 else:
+                    print("ERROR: codewordMappingRule_ROWbyROW[{}][{}] = {}".format(row_i, col_j, codewordMappingRule_ROWbyROW[row_i][col_j]))
                     assert False
 
             assert len(mapped_rowState_list) == self.get_arrayParam_nCol()
@@ -1807,11 +1808,11 @@ class BitStuffingCAC_Simulation_HexArray:
 
     ####################################################################################################################
     def get_signalBits_initState(self):
-        return copy.deepcopy(self._stateList_signalBits_init)
+        return copy.deepcopy(tuple(self._stateList_signalBits_init))
 
     ####################################################################################################################
     def get_signalBits_currentState(self):
-        return copy.deepcopy(self._stateList_signalBits_current)
+        return copy.deepcopy(tuple(self._stateList_signalBits_current))
 
     ####################################################################################################################
     def get_topoTuple_TSVMapping_forXtalkEval_ROWbyROW(self):

@@ -360,11 +360,125 @@ def simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000, edgeTSVXtalkZ
     XtalkCalculator_instance01 = array_xtalk_simu.Array_Xtalk_Calculator(n_row=12, n_col=9)
     # cnt_nSignalBitsTrans = 0
     TSVMapping_tuple = BSCACSimu_instance01.get_topoTuple_TSVMapping_forXtalkEval_ROWbyROW()
+    array_shieldState_list = []
+    for row_kk in range(0, 12):
+        array_shieldState_list.append((False, False, False,
+                                       False, False, False,
+                                       False, False, False))
+    array_shieldState_tuple = tuple(array_shieldState_list)
 
+    ###### CNT
+    cnt_xtalk_stsv = {0: 0,
+                      0.25: 0,
+                      0.5: 0,
+                      0.75: 0,
+                      1: 0,
+                      1.25: 0,
+                      1.5: 0,
+                      1.75: 0,
+                      2: 0,
+                      2.25: 0,
+                      2.5: 0,
+                      2.75: 0,
+                      3: 0,
+                      3.25: 0,
+                      3.5: 0,
+                      3.75: 0,
+                      4: 0,
+                      4.25: 0,
+                      4.5: 0,
+                      4.75: 0,
+                      5: 0,
+                      5.25: 0,
+                      5.5: 0,
+                      5.75: 0,
+                      6: 0,
+                      6.25: 0,
+                      6.5: 0,
+                      6.75: 0,
+                      7: 0,
+                      7.25: 0,
+                      7.5: 0,
+                      7.75: 0,
+                      8: 0,
+                      8.25: 0,
+                      8.5: 0,
+                      8.75: 0,
+                      9: 0,
+                      9.25: 0,
+                      9.5: 0,
+                      9.75: 0,
+                      10: 0,
+                      10.25: 0,
+                      10.5: 0,
+                      10.75: 0,
+                      11: 0,
+                      11.25: 0,
+                      11.5: 0,
+                      11.75: 0,
+                      12: 0,
+                      'None': 0}
+
+    cnt_xtalk_dtsv = {0: 0,
+                      0.25: 0,
+                      0.5: 0,
+                      0.75: 0,
+                      1: 0,
+                      1.25: 0,
+                      1.5: 0,
+                      1.75: 0,
+                      2: 0,
+                      2.25: 0,
+                      2.5: 0,
+                      2.75: 0,
+                      3: 0,
+                      3.25: 0,
+                      3.5: 0,
+                      3.75: 0,
+                      4: 0,
+                      4.25: 0,
+                      4.5: 0,
+                      4.75: 0,
+                      5: 0,
+                      5.25: 0,
+                      5.5: 0,
+                      5.75: 0,
+                      6: 0,
+                      6.25: 0,
+                      6.5: 0,
+                      6.75: 0,
+                      7: 0,
+                      7.25: 0,
+                      7.5: 0,
+                      7.75: 0,
+                      8: 0,
+                      8.25: 0,
+                      8.5: 0,
+                      8.75: 0,
+                      9: 0,
+                      9.25: 0,
+                      9.5: 0,
+                      9.75: 0,
+                      10: 0,
+                      10.25: 0,
+                      10.5: 0,
+                      10.75: 0,
+                      11: 0,
+                      11.25: 0,
+                      11.5: 0,
+                      11.75: 0,
+                      12: 0,
+                      'None': 0}
 
 
     ######Simulation Start
+    arrayState_last = BSCACSimu_instance01.codewordsRemapping_getArrayState(unmappedState_stsvs=copy.deepcopy(BSCACSimu_instance01.get_signalBits_initState()),
+                                                                            unmappedState_dysh1=copy.deepcopy(BSCACSimu_instance01.get_dyShieldingType1_initState()),
+                                                                            unmappedState_dysh2=copy.deepcopy(BSCACSimu_instance01.get_dyShieldingType2_initState()),
+                                                                            unmappedState_dysh3=copy.deepcopy(BSCACSimu_instance01.get_dyShieldingType3_initState()))
+
     for cycle_i in range(0, n_cycleRun):
+        print('\n#########################################################################################################')
         print('Cycle-{}'.format(cycle_i))
         data2bTrans_3Clk, flagsBool_ifSignalBitTrans_3Clk, nTransmitted_signalBits, signalBitsState_3Clk, dysh1State_3Clk, dysh2State_3Clk, dysh3State_3Clk = BSCACSimu_instance01.runSimu_threeClk(dataGenMethod='random')
         # cnt_nSignalBitsTrans = cnt_nSignalBitsTrans + nTransmitted_signalBits
@@ -374,7 +488,145 @@ def simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun = 1000, edgeTSVXtalkZ
         print('-dysh1State_3Clk: {}'.format(dysh1State_3Clk))
         print('-dysh2State_3Clk: {}'.format(dysh2State_3Clk))
         print('-dysh3State_3Clk: {}'.format(dysh3State_3Clk))
-        print('#########################################################################################################')
+
+        ##########################################
+        # CLK 1
+        arrayState_new = BSCACSimu_instance01.codewordsRemapping_getArrayState(unmappedState_stsvs=copy.deepcopy(signalBitsState_3Clk[0]),
+                                                                               unmappedState_dysh1=copy.deepcopy(dysh1State_3Clk[0]),
+                                                                               unmappedState_dysh2=copy.deepcopy(dysh2State_3Clk[0]),
+                                                                               unmappedState_dysh3=copy.deepcopy(dysh3State_3Clk[0]))
+
+        xtalk_simu_result = XtalkCalculator_instance01.calc_xtalk_level_hexTopoA(array_cw01=copy.deepcopy(arrayState_last),
+                                                                                 array_cw02=copy.deepcopy(arrayState_new),
+                                                                                 array_shield=copy.deepcopy(array_shieldState_tuple))
+
+        assert len(xtalk_simu_result) == 12
+        assert len(xtalk_simu_result[0]) == 9
+        for row_kk in range(0, 12):
+            for col_kk in range(0, 9):
+                assert xtalk_simu_result[row_kk][col_kk] in (0, 0.25, 0.5, 0.75,
+                                                             1, 1.25, 1.5, 1.75,
+                                                             2, 2.25, 2.5, 2.75,
+                                                             3, 3.25, 3.5, 3.75,
+                                                             4, 4.25, 4.5, 4.75,
+                                                             5, 5.25, 5.5, 5.75,
+                                                             6, 6.25, 6.5, 6.75,
+                                                             7, 7.25, 7.5, 7.75,
+                                                             8, 8.25, 8.5, 8.75,
+                                                             9, 9.25, 9.5, 9.75,
+                                                             10, 10.25, 10.5, 10.75,
+                                                             11, 11.25, 11.5, 11.75,
+                                                             12)
+                if TSVMapping_tuple[row_kk][col_kk][0] == 0:
+                    cnt_xtalk_stsv[xtalk_simu_result[row_kk][col_kk]] = cnt_xtalk_stsv[xtalk_simu_result[row_kk][col_kk]] + 1
+
+                elif TSVMapping_tuple[row_kk][col_kk][0] in (1, 2, 3):
+                    cnt_xtalk_dtsv[xtalk_simu_result[row_kk][col_kk]]  = cnt_xtalk_dtsv[xtalk_simu_result[row_kk][col_kk]] + 1
+
+                else:
+                    assert False
+
+        arrayState_last = copy.deepcopy(arrayState_new)
+
+        ##########################################
+        # CLK 2
+        arrayState_new = BSCACSimu_instance01.codewordsRemapping_getArrayState(
+            unmappedState_stsvs=copy.deepcopy(signalBitsState_3Clk[1]),
+            unmappedState_dysh1=copy.deepcopy(dysh1State_3Clk[1]),
+            unmappedState_dysh2=copy.deepcopy(dysh2State_3Clk[1]),
+            unmappedState_dysh3=copy.deepcopy(dysh3State_3Clk[1]))
+
+        xtalk_simu_result = XtalkCalculator_instance01.calc_xtalk_level_hexTopoA(
+            array_cw01=copy.deepcopy(arrayState_last),
+            array_cw02=copy.deepcopy(arrayState_new),
+            array_shield=copy.deepcopy(array_shieldState_tuple))
+
+        assert len(xtalk_simu_result) == 12
+        assert len(xtalk_simu_result[0]) == 9
+        for row_kk in range(0, 12):
+            for col_kk in range(0, 9):
+                assert xtalk_simu_result[row_kk][col_kk] in (0, 0.25, 0.5, 0.75,
+                                                             1, 1.25, 1.5, 1.75,
+                                                             2, 2.25, 2.5, 2.75,
+                                                             3, 3.25, 3.5, 3.75,
+                                                             4, 4.25, 4.5, 4.75,
+                                                             5, 5.25, 5.5, 5.75,
+                                                             6, 6.25, 6.5, 6.75,
+                                                             7, 7.25, 7.5, 7.75,
+                                                             8, 8.25, 8.5, 8.75,
+                                                             9, 9.25, 9.5, 9.75,
+                                                             10, 10.25, 10.5, 10.75,
+                                                             11, 11.25, 11.5, 11.75,
+                                                             12)
+                if TSVMapping_tuple[row_kk][col_kk][0] == 0:
+                    cnt_xtalk_stsv[xtalk_simu_result[row_kk][col_kk]] = cnt_xtalk_stsv[
+                                                                            xtalk_simu_result[row_kk][col_kk]] + 1
+
+                elif TSVMapping_tuple[row_kk][col_kk][0] in (1, 2, 3):
+                    cnt_xtalk_dtsv[xtalk_simu_result[row_kk][col_kk]] = cnt_xtalk_dtsv[
+                                                                            xtalk_simu_result[row_kk][col_kk]] + 1
+
+                else:
+                    assert False
+
+        arrayState_last = copy.deepcopy(arrayState_new)
+
+        ##########################################
+        # CLK 3
+        arrayState_new = BSCACSimu_instance01.codewordsRemapping_getArrayState(
+            unmappedState_stsvs=copy.deepcopy(signalBitsState_3Clk[2]),
+            unmappedState_dysh1=copy.deepcopy(dysh1State_3Clk[2]),
+            unmappedState_dysh2=copy.deepcopy(dysh2State_3Clk[2]),
+            unmappedState_dysh3=copy.deepcopy(dysh3State_3Clk[2]))
+
+        xtalk_simu_result = XtalkCalculator_instance01.calc_xtalk_level_hexTopoA(
+            array_cw01=copy.deepcopy(arrayState_last),
+            array_cw02=copy.deepcopy(arrayState_new),
+            array_shield=copy.deepcopy(array_shieldState_tuple))
+
+        assert len(xtalk_simu_result) == 12
+        assert len(xtalk_simu_result[0]) == 9
+        for row_kk in range(0, 12):
+            for col_kk in range(0, 9):
+                assert xtalk_simu_result[row_kk][col_kk] in (0, 0.25, 0.5, 0.75,
+                                                             1, 1.25, 1.5, 1.75,
+                                                             2, 2.25, 2.5, 2.75,
+                                                             3, 3.25, 3.5, 3.75,
+                                                             4, 4.25, 4.5, 4.75,
+                                                             5, 5.25, 5.5, 5.75,
+                                                             6, 6.25, 6.5, 6.75,
+                                                             7, 7.25, 7.5, 7.75,
+                                                             8, 8.25, 8.5, 8.75,
+                                                             9, 9.25, 9.5, 9.75,
+                                                             10, 10.25, 10.5, 10.75,
+                                                             11, 11.25, 11.5, 11.75,
+                                                             12)
+                if TSVMapping_tuple[row_kk][col_kk][0] == 0:
+                    cnt_xtalk_stsv[xtalk_simu_result[row_kk][col_kk]] = cnt_xtalk_stsv[
+                                                                            xtalk_simu_result[row_kk][col_kk]] + 1
+
+                elif TSVMapping_tuple[row_kk][col_kk][0] in (1, 2, 3):
+                    cnt_xtalk_dtsv[xtalk_simu_result[row_kk][col_kk]] = cnt_xtalk_dtsv[
+                                                                            xtalk_simu_result[row_kk][col_kk]] + 1
+
+                else:
+                    assert False
+
+        arrayState_last = copy.deepcopy(arrayState_new)
+
+        print("XTALK-STAVS: {}".format(cnt_xtalk_stsv))
+        print("XTALK-DTSVS: {}".format(cnt_xtalk_dtsv))
+
+    print("\n###########################################################################################################")
+    print("###########################################################################################################")
+    print("###########################################################################################################")
+    print("XTALK-STAVS-FINAL: {}".format(cnt_xtalk_stsv))
+    print("XTALK-DTSVS-FINAL: {}".format(cnt_xtalk_dtsv))
+
+
+
+
+
 
     # print('cnt_nSignalBitsTrans = {}'.format(cnt_nSignalBitsTrans))
     # nTSV_signal = len(BSCACSimu_instance01.get_signalBits_currentState())
