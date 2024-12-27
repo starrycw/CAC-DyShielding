@@ -702,6 +702,153 @@ class FNSCATF_xtalkSimu:
         print("Result - Hex: {}".format(cnt_xtalk_hex))
 
 
+    def runSimu_12x9HexArray_RowByRow(self, n_cycle, CAC_name, edgeEffect_rectWeight = 1,
+                                          edgeEffect_hexWeight = 1,
+                                          edgeEffect_rectPunishment = 0,
+                                          edgeEffect_hexPunishment = 0):
+        '''
+
+        :param n_cycle:
+        :return:
+        '''
+
+
+
+        xtalkCalc_instance = Evaluation_Tools.array_xtalk_simu.Array_Xtalk_Calculator(n_row=12, n_col=9)
+
+        cnt_xtalk_hex = {0: 0,
+                         0.25: 0,
+                         0.5: 0,
+                         0.75: 0,
+                         1: 0,
+                         1.25: 0,
+                         1.5: 0,
+                         1.75: 0,
+                         2: 0,
+                         2.25: 0,
+                         2.5: 0,
+                         2.75: 0,
+                         3: 0,
+                         3.25: 0,
+                         3.5: 0,
+                         3.75: 0,
+                         4: 0,
+                         4.25: 0,
+                         4.5: 0,
+                         4.75: 0,
+                         5: 0,
+                         5.25: 0,
+                         5.5: 0,
+                         5.75: 0,
+                         6: 0,
+                         6.25: 0,
+                         6.5: 0,
+                         6.75: 0,
+                         7: 0,
+                         7.25: 0,
+                         7.5: 0,
+                         7.75: 0,
+                         8: 0,
+                         8.25: 0,
+                         8.5: 0,
+                         8.75: 0,
+                         9: 0,
+                         9.25: 0,
+                         9.5: 0,
+                         9.75: 0,
+                         10: 0,
+                         10.25: 0,
+                         10.5: 0,
+                         10.75: 0,
+                         11: 0,
+                         11.25: 0,
+                         11.5: 0,
+                         11.75: 0,
+                         12: 0,
+                         'None': 0}
+
+
+
+
+        array_shielding_flags_list = []
+        for idx_i in range(0, 12):
+            array_shielding_flags_list.append((False, False, False,
+                                               False, False, False,
+                                               False, False, False,
+                                               False, False, False))
+        array_shielding_flags_tuple = tuple(array_shielding_flags_list)
+
+
+        lastStates_Mapping_list = []
+        for idx_i in range(0, 16):
+            lastStates_Mapping_list.append((0, 0, 0,
+                                            0, 0, 0,
+                                            0, 0, 0,
+                                            0, 0, 0))
+        lastStates_Mapping = tuple(lastStates_Mapping_list)
+
+        for cycle_i in range(0, n_cycle):
+            print("-----------------------------")
+            print("CYCLE- {}".format(cycle_i))
+            currentValueIn_list = []
+
+            if CAC_name == 'FNS-FPF':
+                codec_instance = OtherCAC_Alg.FNSCAC_Codec.FNSCAC_Codec(n_cw=9)
+                valueIn_upperBound = codec_instance.getParam_maxInputValue()
+                for idx_k in range(0, 12):
+                    genValue_random = random.randint(0, valueIn_upperBound)
+                    currentValueIn_list.append(copy.deepcopy(genValue_random))
+                currentValueIn_tuple = tuple(copy.deepcopy(currentValueIn_list))
+                currentCodewords_Mapping = self.genCodes_FNSFPF_12bitx9(value_tuple=copy.deepcopy(currentValueIn_tuple))
+
+            elif CAC_name == 'FNS-FTF':
+                codec_instance = OtherCAC_Alg.FNSCAC_Codec.FNSCAC_Codec(n_cw=9)
+                valueIn_upperBound = codec_instance.getParam_maxInputValue()
+                for idx_k in range(0, 12):
+                    genValue_random = random.randint(0, valueIn_upperBound)
+                    currentValueIn_list.append(copy.deepcopy(genValue_random))
+                currentValueIn_tuple = tuple(copy.deepcopy(currentValueIn_list))
+                currentCodewords_Mapping = self.genCodes_FNSFTF_12bitx9(value_tuple=copy.deepcopy(currentValueIn_tuple))
+
+
+            else:
+                assert False
+
+            print("--- Value IN: {}".format(currentValueIn_tuple))
+            print("--- Last Array State: {}".format(lastStates_Mapping))
+            print("--- Current Array State: {}".format(currentCodewords_Mapping))
+
+
+
+            xtalk_result_hex = xtalkCalc_instance.calc_xtalk_level_hexTopoA(array_cw01=copy.deepcopy(lastStates_Mapping),
+                                                                            array_cw02=copy.deepcopy(currentCodewords_Mapping),
+                                                                            array_shield=copy.deepcopy(array_shielding_flags_tuple),
+                                                                            edgeTSVPunishment=copy.deepcopy(edgeEffect_hexPunishment),
+                                                                            edgeTSVXtalkZoom=copy.deepcopy(edgeEffect_hexWeight))
+            xtalk_cnt_hex = xtalkCalc_instance.xtalk_level_cnt(cw_xtalk_tuple=copy.deepcopy(xtalk_result_hex))
+            print("---xtalk level (Hex): {}".format(xtalk_cnt_hex))
+            for dict_key_i in (0, 0.25, 0.5, 0.75,
+                               1, 1.25, 1.5, 1.75,
+                               2, 2.25, 2.5, 2.75,
+                               3, 3.25, 3.5, 3.75,
+                               4, 4.25, 4.5, 4.75,
+                               5, 5.25, 5.5, 5.75,
+                               6, 6.25, 6.5, 6.75,
+                               7, 7.25, 7.5, 7.75,
+                               8, 8.25, 8.5, 8.75,
+                               9, 9.25, 9.5, 9.75,
+                               10, 10.25, 10.5, 10.75,
+                               11, 11.25, 11.5, 11.75,
+                               12):
+                cnt_xtalk_hex[dict_key_i] = cnt_xtalk_hex[dict_key_i] + xtalk_cnt_hex[dict_key_i]
+
+            lastStates_Mapping = copy.deepcopy(currentCodewords_Mapping)
+
+        print("--------------------------------------------------------------------------------------------")
+        print("12x9 Array - {} 9bits_x12".format(CAC_name))
+        print("Result - Hex: {}".format(cnt_xtalk_hex))
+
+
     def runSimu_16x16Array_NoCAC(self, n_cycle, edgeEffect_rectWeight = 1,
                                           edgeEffect_hexWeight = 1,
                                           edgeEffect_rectPunishment = 0,
@@ -906,6 +1053,140 @@ class FNSCATF_xtalkSimu:
         print("Result - Hex: {}".format(cnt_xtalk_hex))
 
 ########################################################################################################################
+    def runSimu_12x9HexArray_NoCAC(self, n_cycle, edgeEffect_rectWeight = 1,
+                                          edgeEffect_hexWeight = 1,
+                                          edgeEffect_rectPunishment = 0,
+                                          edgeEffect_hexPunishment = 0):
+        '''
+
+        :param n_cycle:
+        :return:
+        '''
+
+
+
+        xtalkCalc_instance = Evaluation_Tools.array_xtalk_simu.Array_Xtalk_Calculator(n_row=12, n_col=9)
+
+        cnt_xtalk_hex = {0: 0,
+                         0.25: 0,
+                         0.5: 0,
+                         0.75: 0,
+                         1: 0,
+                         1.25: 0,
+                         1.5: 0,
+                         1.75: 0,
+                         2: 0,
+                         2.25: 0,
+                         2.5: 0,
+                         2.75: 0,
+                         3: 0,
+                         3.25: 0,
+                         3.5: 0,
+                         3.75: 0,
+                         4: 0,
+                         4.25: 0,
+                         4.5: 0,
+                         4.75: 0,
+                         5: 0,
+                         5.25: 0,
+                         5.5: 0,
+                         5.75: 0,
+                         6: 0,
+                         6.25: 0,
+                         6.5: 0,
+                         6.75: 0,
+                         7: 0,
+                         7.25: 0,
+                         7.5: 0,
+                         7.75: 0,
+                         8: 0,
+                         8.25: 0,
+                         8.5: 0,
+                         8.75: 0,
+                         9: 0,
+                         9.25: 0,
+                         9.5: 0,
+                         9.75: 0,
+                         10: 0,
+                         10.25: 0,
+                         10.5: 0,
+                         10.75: 0,
+                         11: 0,
+                         11.25: 0,
+                         11.5: 0,
+                         11.75: 0,
+                         12: 0,
+                         'None': 0}
+
+
+
+
+        array_shielding_flags_list = []
+        for idx_i in range(0, 12):
+            array_shielding_flags_list.append((False, False, False,
+                                               False, False, False,
+                                               False, False, False,
+                                               False, False, False))
+        array_shielding_flags_tuple = tuple(array_shielding_flags_list)
+
+
+        lastStates_Mapping_list = []
+        for idx_i in range(0, 16):
+            lastStates_Mapping_list.append((0, 0, 0,
+                                            0, 0, 0,
+                                            0, 0, 0,
+                                            0, 0, 0))
+        lastStates_Mapping = tuple(lastStates_Mapping_list)
+
+        for cycle_i in range(0, n_cycle):
+            print("-----------------------------")
+            print("CYCLE- {}".format(cycle_i))
+            currentValueIn_list = []
+
+            currentCodewords_Mapping_list = []
+            for idx_mm in range(0, 12):
+                currentCodewords_Mapping_list_oneRow = []
+                for idx_nn in range(0, 9):
+                    currentCodewords_Mapping_list_oneRow.append(random.choice((0, 1)))
+                currentCodewords_Mapping_list.append(tuple(copy.deepcopy(currentCodewords_Mapping_list_oneRow)))
+            currentCodewords_Mapping = tuple(copy.deepcopy(currentCodewords_Mapping_list))
+
+            # print("--- Value IN: {}".format(currentValueIn_tuple))
+            print("--- Last Array State: {}".format(lastStates_Mapping))
+            print("--- Current Array State: {}".format(currentCodewords_Mapping))
+
+
+
+            xtalk_result_hex = xtalkCalc_instance.calc_xtalk_level_hexTopoA(array_cw01=copy.deepcopy(lastStates_Mapping),
+                                                                            array_cw02=copy.deepcopy(currentCodewords_Mapping),
+                                                                            array_shield=copy.deepcopy(array_shielding_flags_tuple),
+                                                                            edgeTSVPunishment=copy.deepcopy(edgeEffect_hexPunishment),
+                                                                            edgeTSVXtalkZoom=copy.deepcopy(edgeEffect_hexWeight))
+            xtalk_cnt_hex = xtalkCalc_instance.xtalk_level_cnt(cw_xtalk_tuple=copy.deepcopy(xtalk_result_hex))
+            print("---xtalk level (Hex): {}".format(xtalk_cnt_hex))
+            for dict_key_i in (0, 0.25, 0.5, 0.75,
+                               1, 1.25, 1.5, 1.75,
+                               2, 2.25, 2.5, 2.75,
+                               3, 3.25, 3.5, 3.75,
+                               4, 4.25, 4.5, 4.75,
+                               5, 5.25, 5.5, 5.75,
+                               6, 6.25, 6.5, 6.75,
+                               7, 7.25, 7.5, 7.75,
+                               8, 8.25, 8.5, 8.75,
+                               9, 9.25, 9.5, 9.75,
+                               10, 10.25, 10.5, 10.75,
+                               11, 11.25, 11.5, 11.75,
+                               12):
+                cnt_xtalk_hex[dict_key_i] = cnt_xtalk_hex[dict_key_i] + xtalk_cnt_hex[dict_key_i]
+
+            lastStates_Mapping = copy.deepcopy(currentCodewords_Mapping)
+
+        print("--------------------------------------------------------------------------------------------")
+        print("12x9 Array - No CAC")
+        print("Result - Hex: {}".format(cnt_xtalk_hex))
+
+
+
 ########################################################################################################################
 ########################################################################################################################
 # How to use?
