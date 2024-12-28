@@ -702,9 +702,8 @@ class FNSCATF_xtalkSimu:
         print("Result - Hex: {}".format(cnt_xtalk_hex))
 
 
-    def runSimu_12x9HexArray_RowByRow(self, n_cycle, CAC_name, edgeEffect_rectWeight = 1,
+    def runSimu_12x9HexArray_RowByRow(self, n_cycle, CAC_name,
                                           edgeEffect_hexWeight = 1,
-                                          edgeEffect_rectPunishment = 0,
                                           edgeEffect_hexPunishment = 0):
         '''
 
@@ -774,15 +773,13 @@ class FNSCATF_xtalkSimu:
         for idx_i in range(0, 12):
             array_shielding_flags_list.append((False, False, False,
                                                False, False, False,
-                                               False, False, False,
                                                False, False, False))
         array_shielding_flags_tuple = tuple(array_shielding_flags_list)
 
 
         lastStates_Mapping_list = []
-        for idx_i in range(0, 16):
+        for idx_i in range(0, 12):
             lastStates_Mapping_list.append((0, 0, 0,
-                                            0, 0, 0,
                                             0, 0, 0,
                                             0, 0, 0))
         lastStates_Mapping = tuple(lastStates_Mapping_list)
@@ -1053,9 +1050,8 @@ class FNSCATF_xtalkSimu:
         print("Result - Hex: {}".format(cnt_xtalk_hex))
 
 ########################################################################################################################
-    def runSimu_12x9HexArray_NoCAC(self, n_cycle, edgeEffect_rectWeight = 1,
+    def runSimu_12x9HexArray_NoCAC(self, n_cycle,
                                           edgeEffect_hexWeight = 1,
-                                          edgeEffect_rectPunishment = 0,
                                           edgeEffect_hexPunishment = 0):
         '''
 
@@ -1125,15 +1121,13 @@ class FNSCATF_xtalkSimu:
         for idx_i in range(0, 12):
             array_shielding_flags_list.append((False, False, False,
                                                False, False, False,
-                                               False, False, False,
                                                False, False, False))
         array_shielding_flags_tuple = tuple(array_shielding_flags_list)
 
 
         lastStates_Mapping_list = []
-        for idx_i in range(0, 16):
+        for idx_i in range(0, 12):
             lastStates_Mapping_list.append((0, 0, 0,
-                                            0, 0, 0,
                                             0, 0, 0,
                                             0, 0, 0))
         lastStates_Mapping = tuple(lastStates_Mapping_list)
@@ -1183,7 +1177,7 @@ class FNSCATF_xtalkSimu:
 
         print("--------------------------------------------------------------------------------------------")
         print("12x9 Array - No CAC")
-        print("Result - Hex: {}".format(cnt_xtalk_hex))
+        print("Result: {}".format(cnt_xtalk_hex))
 
 
 
