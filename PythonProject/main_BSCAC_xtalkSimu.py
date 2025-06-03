@@ -31,9 +31,16 @@ if False:
 
 ########################################################################################################################
 # FNS-FTF - 12x9 Hex Array
-if True:
+if False:
     simu_instance01 = FNSCATFCAC_xtalkSimuInArray.FNSCATF_xtalkSimu()
     simu_instance01.runSimu_12x9HexArray_RowByRow(n_cycle=n_simuCycle,
                                                   CAC_name='FNS-FTF',
                                                   edgeEffect_hexWeight=edgeTSVXtalkZoom,
                                                   edgeEffect_hexPunishment=edgeTSVPunishment)
+
+#######################################################################################################################
+# BSCAC - 12x9 Hex Array
+if True:
+    BSCACHex_Analyze.simulation_xtalkSimu_HexArrayRegularA_18x12(n_cycleRun=n_simuCycle,
+                                                                 edgeTSVXtalkZoom=edgeTSVXtalkZoom,
+                                                                 edgeTSVPunishment=edgeTSVPunishment)
